@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar'
 import ProjectDetails from '../components/ProjectDetails'
 import axios from 'axios'
 import getWorkspace from '../utils/getWorkspace'
+import { toast } from 'react-hot-toast'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState([])
@@ -22,7 +23,11 @@ function ProjectsPage() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setProjects([...projects, response.data])
-    } catch (error) { console.error(error) }
+      toast.success('Project initiated successfully')
+    } catch (error) { 
+      console.error(error)
+      toast.error('Failed to initiate project')
+    }
   }
 
   const updateProject = async (projectId, projectData) => {
@@ -32,7 +37,11 @@ function ProjectsPage() {
       })
       setProjects(projects.map(p => p.id === projectId ? response.data : p))
       if (selectedProject?.id === projectId) setSelectedProject(response.data)
-    } catch (error) { console.error(error) }
+      toast.success('Project configuration updated')
+    } catch (error) { 
+      console.error(error)
+      toast.error('Failed to update project')
+    }
   }
 
   const createWorkspace = async (workspace) => {
@@ -41,7 +50,11 @@ function ProjectsPage() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setWorkspaces([...workspaces, response.data])
-    } catch (error) { console.error(error) }
+      toast.success('Workspace environment provisioned')
+    } catch (error) { 
+      console.error(error)
+      toast.error('Failed to provision workspace')
+    }
   }
 
   const deleteWorkspace = async () => {
@@ -51,9 +64,13 @@ function ProjectsPage() {
       await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${selectedWorkspace.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
+      toast.success('Workspace purged from registry')
       setWorkspaces(workspaces.filter(ws => ws.id !== selectedWorkspace.id))
       setSelectedWorkspace(null)
-    } catch (error) { console.error(error) }
+    } catch (error) { 
+      console.error(error)
+      toast.error('Failed to purge workspace')
+    }
   }
 
   const createModule = async (module) => {
@@ -62,7 +79,11 @@ function ProjectsPage() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setModules([...modules, response.data])
-    } catch (error) { console.error(error) }
+      toast.success('Module integrated into architecture')
+    } catch (error) { 
+      console.error(error)
+      toast.error('Failed to integrate module')
+    }
   }
 
   const createTask = async (taskData) => {
@@ -71,17 +92,21 @@ function ProjectsPage() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setTasks([...tasks, response.data])
-    } catch (error) { console.error(error) }
+      toast.success('Operational task deployed')
+    } catch (error) { 
+      console.error(error)
+      toast.error('Task deployment failed')
+    }
   }
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
       const res = await getWorkspace.getWorkspaces()
       setWorkspaces(res || [])
-      if (res && res.length > 0) setSelectedWorkspace(res[0])
+      if (res && res.length > 0 && !selectedWorkspace) setSelectedWorkspace(res[0])
     }
-    fetchWorkspaces()
-  }, [])
+    if (token) fetchWorkspaces()
+  }, [token])
 
   useEffect(() => {
     if (!selectedWorkspace) {
@@ -96,18 +121,17 @@ function ProjectsPage() {
   }, [selectedWorkspace])
 
   useEffect(() => {
-    if (!selectedWorkspace) return
+    if (!selectedWorkspace || !token) return
     const fetchProjects = async () => {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${selectedWorkspace.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setProjects(res.data)
-      if (res.data.length > 0) setSelectedProject(res.data[0])
-      else setSelectedProject(null)
+      if (res.data.length > 0 && !selectedProject) setSelectedProject(res.data[0])
     }
     fetchProjects()
-  }, [selectedWorkspace])
+  }, [selectedWorkspace, token])
 
   return (
     <div className="flex flex-row min-h-screen bg-enterprise-light font-sans text-enterprise-dark">

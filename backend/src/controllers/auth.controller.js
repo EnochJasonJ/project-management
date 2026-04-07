@@ -59,6 +59,51 @@ export const loginUser = async(req,res) => {
     }
 }
 
+export const oauthSync = async (req, res) => {
+    try {
+        const { email, name } = req.body;
+        if (!email) return res.status(400).json({ error: "Email is required" });
+
+        // Check if user exists
+        let { data: user, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("email", email)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is code for no rows found
+            return res.status(500).json({ error: error.message });
+        }
+
+        if (!user) {
+            // Create user if not exists
+            const { data: newUser, error: createError } = await supabase
+                .from("users")
+                .insert([{ name, email, password: 'OAUTH_USER' }])
+                .select("*")
+                .single();
+            
+            if (createError) return res.status(500).json({ error: createError.message });
+            user = newUser;
+        }
+
+        const token = jwt.sign(
+            { id: user.id },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            token,
+            userName: user.name,
+            emailId: user.email,
+            userId: user.id
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 
 

@@ -4,6 +4,8 @@ import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons/faGoogle'
 import { faGithub } from '@fortawesome/free-brands-svg-icons/faGithub'
+import { supabase } from '../utils/supabaseClient'
+import { toast } from 'react-hot-toast'
 
 function LoginForm() {
   const [email, setEmail] = useState("")
@@ -22,9 +24,29 @@ function LoginForm() {
       localStorage.setItem("userName", response.data["userName"])
       localStorage.setItem("emailId", response.data["emailId"])
       localStorage.setItem("userId", response.data["userId"])
+      toast.success('Authentication successful')
       navigate("/projects")
-    } catch (error) { console.error(error) }
+    } catch (error) { 
+      console.error(error)
+      toast.error('Invalid credentials')
+    }
     finally { setIsLoading(false) }
+  }
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      // Redirect to /login so the LoginPage can process the session before PrivateRoute catches it
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin + '/login'
+        }
+      })
+      if (error) throw error
+    } catch (error) {
+      console.error(error)
+      toast.error(`Failed to initiate ${provider} login`)
+    }
   }
 
   return (
@@ -51,8 +73,18 @@ function LoginForm() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-6">
-        <button className="flex items-center justify-center gap-2 py-2 border border-enterprise-muted/20 rounded hover:bg-enterprise-light transition-all text-[10px] font-bold text-enterprise-muted"><FontAwesomeIcon icon={faGoogle} /> Google</button>
-        <button className="flex items-center justify-center gap-2 py-2 border border-enterprise-muted/20 rounded hover:bg-enterprise-light transition-all text-[10px] font-bold text-enterprise-muted"><FontAwesomeIcon icon={faGithub} /> GitHub</button>
+        <button 
+          onClick={() => handleSocialLogin('google')}
+          className="flex items-center justify-center gap-2 py-2 border border-enterprise-muted/20 rounded hover:bg-enterprise-light transition-all text-[10px] font-bold text-enterprise-muted"
+        >
+          <FontAwesomeIcon icon={faGoogle} /> Google
+        </button>
+        <button 
+          onClick={() => handleSocialLogin('github')}
+          className="flex items-center justify-center gap-2 py-2 border border-enterprise-muted/20 rounded hover:bg-enterprise-light transition-all text-[10px] font-bold text-enterprise-muted"
+        >
+          <FontAwesomeIcon icon={faGithub} /> GitHub
+        </button>
       </div>
 
       <p className="text-center mt-8 text-[10px] font-bold text-enterprise-muted uppercase tracking-widest">

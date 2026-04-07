@@ -1,20 +1,77 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { isAuthenticated } from '../utils/auth'
 import LoginForm from '../components/LoginForm'
+import { supabase } from '../utils/supabaseClient'
+import axios from 'axios'
+import { toast } from 'react-hot-toast'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const [isSyncing, setIsSyncing] = useState(false)
+  const hasSynced = useRef(false)
+
   useEffect(() => {
-    if (isAuthenticated()) navigate("/projects")
+    // 1. If we already have a TASKFLOW token, just go to projects
+    if (isAuthenticated()) {
+      navigate("/projects")
+      return
+    }
+
+    // 2. Check for Supabase Session (Social Login Redirect)
+    const handleOAuthRedirect = async () => {
+      // Small delay to ensure URL fragments are processed by Supabase client
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (session && !hasSynced.current) {
+        hasSynced.current = true // Prevent double sync in StrictMode
+        setIsSyncing(true)
+        
+        try {
+          const user = session.user
+          const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/oauth-sync`, {
+            email: user.email,
+            name: user.user_metadata.full_name || user.email.split('@')[0]
+          })
+          
+          // Store our enterprise token and user info
+          localStorage.setItem("token", response.data.token)
+          localStorage.setItem("userName", response.data.userName)
+          localStorage.setItem("emailId", response.data.emailId)
+          localStorage.setItem("userId", response.data.userId)
+          
+          toast.success('Identity verified via SSO')
+          
+          // Sign out of Supabase immediately so next login starts fresh
+          await supabase.auth.signOut()
+          
+          // Final redirect to dashboard
+          navigate("/projects")
+        } catch (err) {
+          console.error('SSO Sync Error:', err)
+          toast.error('Identity synchronization failed')
+          setIsSyncing(false)
+        }
+      }
+    }
+
+    handleOAuthRedirect()
   }, [navigate])
+
+  if (isSyncing) {
+    return (
+      <div className="min-h-screen bg-enterprise-light flex flex-col items-center justify-center p-6">
+        <div className="w-12 h-12 border-4 border-enterprise-dark border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-bold text-enterprise-dark uppercase tracking-widest">Establishing Secure Session...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-enterprise-light flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Structural background elements */}
       <div className="absolute top-0 left-0 w-full h-1 bg-enterprise-dark" />
       
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center mb-8">
           <div className="inline-block px-3 py-1 bg-enterprise-dark text-white text-[10px] font-bold uppercase tracking-[0.3em] rounded mb-4">
             Authorized Personnel Only

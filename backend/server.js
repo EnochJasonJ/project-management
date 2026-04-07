@@ -7,6 +7,7 @@ import workspaceRoutes from "./src/routes/workspace.routes.js";
 import projectRoutes from "./src/routes/project.routes.js";
 import TaskRoutes from "./src/routes/task.routes.js";
 import ModuleRoutes from "./src/routes/module.routes.js";
+import CommentRoutes from "./src/routes/comment.routes.js";
 dotenv.config();
 
 const app = express();
@@ -17,6 +18,7 @@ app.use("/api/workspaces",workspaceRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks",TaskRoutes);
 app.use("/api/modules",ModuleRoutes);
+app.use("/api/comments", CommentRoutes);
 
 const PORT = 3000;
 

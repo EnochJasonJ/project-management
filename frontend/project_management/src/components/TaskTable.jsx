@@ -4,9 +4,10 @@ import {
     faPlus, faSearch, faFilter, faSort, faSortUp, faSortDown,
     faGripVertical, faTable, faThLarge, faList, faEllipsisV,
     faCheckCircle, faCircle, faClock, faExclamationCircle,
-    faFlag, faCalendar, faUser, faChevronDown, faArrowUpWideShort, faPen, faTrash
+    faFlag, faCalendar, faUser, faChevronDown, faArrowUpWideShort, faPen, faTrash, faCommentAlt
 } from '@fortawesome/free-solid-svg-icons'
 import EditTaskModal from './EditTaskModal'
+import { toast } from 'react-hot-toast'
 
 // Status configuration
 const STATUS_CONFIG = {
@@ -77,8 +78,12 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             if (response.ok) {
                 const updated = await response.json()
                 setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+                toast.success(`Lifecycle set to ${newStatus.toUpperCase()}`)
             }
-        } catch (error) { console.error('Failed to update task:', error) }
+        } catch (error) { 
+            console.error('Failed to update task:', error) 
+            toast.error('Lifecycle update failed')
+        }
         setEditingCell(null)
     }
 
@@ -93,8 +98,12 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             if (response.ok) {
                 const updated = await response.json()
                 setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+                toast.success(`Priority elevated to ${newPriority.toUpperCase()}`)
             }
-        } catch (error) { console.error('Failed to update task:', error) }
+        } catch (error) { 
+            console.error('Failed to update task:', error) 
+            toast.error('Priority shift failed')
+        }
         setEditingCell(null)
     }
 
@@ -109,8 +118,12 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             if (response.ok) {
                 const updated = await response.json()
                 setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
+                toast.success('Operator reassigned')
             }
-        } catch (error) { console.error('Failed to update task assignee:', error) }
+        } catch (error) { 
+            console.error('Failed to update task assignee:', error) 
+            toast.error('Reassignment failed')
+        }
         setEditingCell(null)
     }
 
@@ -137,8 +150,12 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                 const updated = await response.json()
                 setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
                 setTaskToEdit(null)
+                toast.success('Task properties synchronized')
             }
-        } catch (error) { console.error('Failed to update task:', error) }
+        } catch (error) { 
+            console.error('Failed to update task:', error) 
+            toast.error('Sync failed')
+        }
     }
 
     const handleDeleteTask = async (taskId, skipConfirm = false) => {
@@ -152,19 +169,25 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             if (response.ok) {
                 setTasks(prev => prev.filter(t => t.id !== taskId))
                 setSelectedTasks(prev => { const n = new Set(prev); n.delete(taskId); return n; })
+                if (!skipConfirm) toast.success('Entity purged from system')
             }
-        } catch (error) { console.error('Failed to delete task:', error) }
+        } catch (error) { 
+            console.error('Failed to delete task:', error) 
+            toast.error('Purge failed')
+        }
     }
 
     const handleBulkDeleteTasks = async () => {
         if (!window.confirm(`Are you sure you want to delete ${selectedTasks.size} task(s)?`)) return
         for (const taskId of selectedTasks) await handleDeleteTask(taskId, true)
         setSelectedTasks(new Set())
+        toast.success('Batch purge completed')
     }
 
     const handleBulkMarkAsDone = async () => {
         for (const taskId of selectedTasks) await updateTaskStatus(taskId, 'done')
         setSelectedTasks(new Set())
+        toast.success('Batch status synchronization complete')
     }
 
     useEffect(() => {
@@ -175,14 +198,18 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const getSortIcon = (k) => sortConfig.key !== k ? faSort : (sortConfig.direction === 'asc' ? faSortUp : faSortDown)
 
     const renderActionsMenu = (task) => (
-        <div className="absolute right-0 top-8 z-30 bg-white rounded shadow-xl border border-enterprise-muted/20 py-1 w-48 overflow-hidden">
+        <div className="absolute right-0 top-8 z-30 bg-white rounded shadow-xl border border-enterprise-muted/20 py-1 w-56 overflow-hidden">
             <button onClick={(e) => { e.stopPropagation(); setTaskToEdit(task); setShowActionsMenu(null); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-enterprise-dark hover:bg-enterprise-light transition-colors">
                 <FontAwesomeIcon icon={faPen} className="text-enterprise-muted w-4" />
-                Edit Task Details
+                Task Configuration
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); setTaskToEdit(task); setShowActionsMenu(null); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-enterprise-dark hover:bg-enterprise-light transition-colors border-t border-enterprise-muted/5">
+                <FontAwesomeIcon icon={faCommentAlt} className="text-blue-500 w-4" />
+                Operational Ledger
             </button>
             <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); setShowActionsMenu(null); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-enterprise-muted/5">
                 <FontAwesomeIcon icon={faTrash} className="w-4" />
-                Destroy Entity
+                Purge Entity
             </button>
         </div>
     )
@@ -195,7 +222,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                         <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-enterprise-muted text-xs" />
                         <input type="text" placeholder="Search operational tasks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 text-sm bg-white border border-enterprise-muted/30 rounded-md focus:outline-none focus:ring-1 focus:ring-enterprise-dark w-80 placeholder:text-enterprise-muted/50 font-medium text-enterprise-dark" />
                     </div>
-                    <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest rounded border transition-all ${filterConfig.status.length > 0 || filterConfig.priority.length > 0 ? 'bg-enterprise-dark text-white border-enterprise-dark shadow-sm' : 'bg-white border-enterprise-muted/30 text-enterprise-muted hover:border-enterprise-dark'}`}><FontAwesomeIcon icon={faFilter} /> Filter Pipeline</button>
+                    <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest rounded border transition-all ${filterConfig.status.length > 0 || filterConfig.priority.length > 0 ? 'bg-enterprise-dark text-white border-enterprise-dark shadow-sm' : 'bg-white border border-enterprise-muted/30 text-enterprise-muted hover:border-enterprise-dark'}`}><FontAwesomeIcon icon={faFilter} /> Filter Pipeline</button>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex items-center bg-enterprise-light p-1 rounded-lg border border-enterprise-muted/20">
@@ -252,9 +279,10 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                                     <td className="px-4 py-4 text-center"><input type="checkbox" checked={selectedTasks.has(task.id)} onChange={() => toggleTaskSelection(task.id)} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-4 h-4" /></td>
                                     <td className="text-center opacity-0 group-hover:opacity-100 transition-opacity"><FontAwesomeIcon icon={faGripVertical} className="text-enterprise-muted/30" size="xs" /></td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-4 cursor-pointer" onClick={() => setTaskToEdit(task)}>
                                             <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-sm ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/30'}`} />
-                                            <span className={`text-sm font-bold tracking-tight ${task.status === 'done' ? 'line-through text-enterprise-muted/50' : 'text-enterprise-dark'}`}>{task.title}</span>
+                                            <span className={`text-sm font-bold tracking-tight group-hover:text-blue-600 transition-colors ${task.status === 'done' ? 'line-through text-enterprise-muted/50' : 'text-enterprise-dark'}`}>{task.title}</span>
+                                            <FontAwesomeIcon icon={faCommentAlt} className="text-[10px] text-enterprise-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </div>
                                     </td>
                                     
@@ -320,7 +348,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                                 <div className={`flex items-center justify-between mb-6 px-4 py-3 rounded-lg border-b-2 border-enterprise-muted/30 shadow-sm ${config.color}`}><div className="flex items-center gap-3 font-bold uppercase tracking-[0.2em] text-xs"><FontAwesomeIcon icon={config.icon} /><span>{config.label}</span></div><span className="text-xs font-black text-enterprise-dark">{statusTasks.length}</span></div>
                                 <div className="space-y-4">
                                     {statusTasks.map(task => (
-                                        <div key={task.id} className="bg-white rounded-xl p-6 shadow-sm border border-enterprise-muted/10 hover:border-enterprise-muted/30 hover:shadow-md transition-all cursor-pointer relative group">
+                                        <div key={task.id} onClick={() => setTaskToEdit(task)} className="bg-white rounded-xl p-6 shadow-sm border border-enterprise-muted/10 hover:border-enterprise-muted/30 hover:shadow-md transition-all cursor-pointer relative group">
                                             <div className="flex items-start justify-between mb-4"><h4 className={`text-sm font-bold text-enterprise-dark leading-tight tracking-tight ${task.status === 'done' ? 'line-through opacity-30' : ''}`}>{task.title}</h4><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark opacity-0 group-hover:opacity-100 transition-opacity p-1"><FontAwesomeIcon icon={faEllipsisV} /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
                                             <div className="flex flex-wrap gap-2 mb-6"><span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-widest ${PRIORITY_CONFIG[task.priority]?.bg} ${PRIORITY_CONFIG[task.priority]?.color}`}>{PRIORITY_CONFIG[task.priority]?.label}</span><span className="text-[10px] font-bold text-enterprise-muted/60 bg-enterprise-light px-2 py-1 rounded border uppercase tracking-widest">{getModuleName(task.module_id)}</span></div>
                                             <div className="flex items-center justify-between pt-4 border-t border-enterprise-light">{task.deadline ? <div className="flex items-center gap-2 text-[10px] font-bold text-enterprise-muted uppercase tracking-widest"><FontAwesomeIcon icon={faCalendar} className="text-enterprise-muted/40" /> {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div> : <div />} {task.users && <div className="w-8 h-8 rounded bg-enterprise-dark flex items-center justify-center text-xs text-white font-bold shadow-sm">{task.users.name.charAt(0)}</div>}</div>
@@ -336,11 +364,11 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             {viewMode === 'list' && (
                 <div className="divide-y divide-enterprise-muted/10">
                     {filteredTasks.map(task => (
-                        <div key={task.id} className="flex items-center gap-6 px-10 py-5 hover:bg-enterprise-light/20 transition-all group relative">
-                            <input type="checkbox" checked={selectedTasks.has(task.id)} onChange={() => toggleTaskSelection(task.id)} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-5 h-5" />
+                        <div key={task.id} onClick={() => setTaskToEdit(task)} className="flex items-center gap-6 px-10 py-5 hover:bg-enterprise-light/20 transition-all group relative cursor-pointer">
+                            <input type="checkbox" checked={selectedTasks.has(task.id)} onChange={(e) => { e.stopPropagation(); toggleTaskSelection(task.id); }} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-5 h-5" />
                             <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-base ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/20'}`} />
                             <span className={`flex-1 font-bold text-base tracking-tight ${task.status === 'done' ? 'line-through text-enterprise-muted/30' : 'text-enterprise-dark'}`}>{task.title}</span>
-                            <div className="flex items-center gap-10">{task.users && <div className="w-9 h-9 rounded bg-enterprise-dark flex items-center justify-center text-sm text-white font-bold shadow-md">{task.users.name.charAt(0)}</div>}<span className={`text-[10px] font-black px-4 py-2 rounded-md border uppercase tracking-[0.2em] shadow-sm ${STATUS_CONFIG[task.status]?.color}`}>{STATUS_CONFIG[task.status]?.label}</span><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark p-2 rounded hover:bg-enterprise-light transition-all opacity-0 group-hover:opacity-100"><FontAwesomeIcon icon={faEllipsisV} /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
+                            <div className="flex items-center gap-10">{task.users && <div className="w-9 h-9 rounded bg-enterprise-dark flex items-center justify-center text-sm text-white font-bold shadow-md">{task.users.name.charAt(0)}</div>}<span className={`text-[10px] font-black px-4 py-2 rounded-md border uppercase tracking-[0.2em] shadow-sm ${STATUS_CONFIG[task.status]?.color}`}>{STATUS_CONFIG[task.status]?.label}</span><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark p-2 rounded-full hover:bg-enterprise-light transition-all opacity-0 group-hover:opacity-100"><FontAwesomeIcon icon={faEllipsisV} /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
                         </div>
                     ))}
                 </div>
