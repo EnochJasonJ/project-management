@@ -14,175 +14,71 @@ function CreateTaskModal({ modules, workspaceMembers, onCreateTask, onClose }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!title.trim() || !moduleId) return
-
         setIsSubmitting(true)
         try {
             await onCreateTask({
-                title,
-                description,
-                module_id: moduleId,
-                priority,
-                deadline: deadline || null,
-                assigned_to: assignedTo || null,
-                status: 'todo'
+                title, description, module_id: moduleId,
+                priority, deadline: deadline || null,
+                assigned_to: assignedTo || null, status: 'todo'
             })
-        } catch (error) {
-            console.error('Failed to create task:', error)
-        } finally {
-            setIsSubmitting(false)
-        }
+        } catch (error) { console.error(error) }
+        finally { setIsSubmitting(false) }
     }
 
     return (
-        <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-            onClick={(e) => e.target === e.currentTarget && onClose()}
-        >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-                            <FontAwesomeIcon icon={faPlus} className="text-white text-sm" />
-                        </div>
-                        <h2 className="text-lg font-semibold text-gray-900">Create New Task</h2>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1 hover:bg-gray-200 rounded transition-colors"
-                    >
-                        <FontAwesomeIcon icon={faXmark} className="text-gray-500" />
-                    </button>
+        <div className="fixed inset-0 bg-enterprise-dark/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden border border-enterprise-muted/20 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-enterprise-muted/10 bg-enterprise-light/50">
+                    <h2 className="text-sm font-bold text-enterprise-dark uppercase tracking-widest">Create Operational Task</h2>
+                    <button onClick={onClose} className="text-enterprise-muted hover:text-enterprise-dark transition-colors"><FontAwesomeIcon icon={faXmark} /></button>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {/* Title */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            Title <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="What needs to be done?"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                            required
-                            autoFocus
-                        />
+                        <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5">Title</label>
+                        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task summary" className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark focus:border-enterprise-dark outline-none transition-all font-semibold" required autoFocus />
                     </div>
 
-                    {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            Description
-                        </label>
-                        <div className="relative">
-                            <FontAwesomeIcon
-                                icon={faAlignLeft}
-                                className="absolute left-3 top-3 text-gray-400 text-xs"
-                            />
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Add more details..."
-                                rows={3}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm resize-none"
-                            />
-                        </div>
+                        <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5">Description</label>
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Detailed technical requirements..." rows={3} className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark focus:border-enterprise-dark outline-none transition-all font-medium resize-none" />
                     </div>
 
-                    {/* Module Selection */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            Module <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            value={moduleId}
-                            onChange={(e) => setModuleId(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                            required
-                        >
-                            <option value="">Select a module</option>
-                            {modules.map((module) => (
-                                <option key={module.id} value={module.id}>
-                                    {module.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Priority & Deadline Row */}
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Priority */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                <FontAwesomeIcon icon={faFlag} className="mr-1.5 text-gray-400" />
-                                Priority
-                            </label>
-                            <select
-                                value={priority}
-                                onChange={(e) => setPriority(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                            >
+                            <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5">Module Selection</label>
+                            <select value={moduleId} onChange={(e) => setModuleId(e.target.value)} className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none cursor-pointer font-semibold" required>
+                                <option value="">Select Module</option>
+                                {modules.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5">Priority Level</label>
+                            <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none cursor-pointer font-semibold">
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
                                 <option value="high">High</option>
                             </select>
                         </div>
+                    </div>
 
-                        {/* Deadline */}
+                    <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                <FontAwesomeIcon icon={faCalendar} className="mr-1.5 text-gray-400" />
-                                Due Date
-                            </label>
-                            <input
-                                type="date"
-                                value={deadline}
-                                onChange={(e) => setDeadline(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                            />
+                            <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5">Assignee</label>
+                            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none cursor-pointer font-semibold">
+                                <option value="">Unassigned</option>
+                                {workspaceMembers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5">Deadline</label>
+                            <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none font-semibold" />
                         </div>
                     </div>
 
-                    {/* Assignee */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            <FontAwesomeIcon icon={faUser} className="mr-1.5 text-gray-400" />
-                            Assignee (optional)
-                        </label>
-                        <select
-                            value={assignedTo}
-                            onChange={(e) => setAssignedTo(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">Unassigned</option>
-                            {workspaceMembers && workspaceMembers.map((member) => (
-                                <option key={member.id} value={member.id}>
-                                    {member.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting || !title.trim() || !moduleId}
-                            className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                        >
-                            {isSubmitting ? 'Creating...' : 'Create Task'}
-                        </button>
+                    <div className="flex gap-3 pt-4">
+                        <button type="button" onClick={onClose} className="flex-1 py-2 px-4 border border-enterprise-muted/30 text-enterprise-muted font-bold uppercase text-[10px] tracking-widest rounded hover:bg-enterprise-light transition-all">Cancel</button>
+                        <button type="submit" disabled={isSubmitting || !title.trim() || !moduleId} className="flex-1 py-2 px-4 bg-enterprise-dark text-white font-bold uppercase text-[10px] tracking-widest rounded hover:bg-enterprise-accent transition-all shadow-md disabled:opacity-50">{isSubmitting ? 'Processing...' : 'Deploy Task'}</button>
                     </div>
                 </form>
             </div>

@@ -5,102 +5,70 @@ import axios from 'axios'
 import getWorkspace from '../utils/getWorkspace'
 
 function ProjectsPage() {
-  const token = localStorage.getItem("token")
-  const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects`
   const [projects, setProjects] = useState([])
-  const [selectedProject, setSelectedProject] = useState(null)
   const [workspaces, setWorkspaces] = useState([])
   const [selectedWorkspace, setSelectedWorkspace] = useState(null)
+  const [selectedProject, setSelectedProject] = useState(null)
   const [selectedModule, setSelectedModule] = useState(null)
   const [modules, setModules] = useState([])
   const [tasks, setTasks] = useState([])
   const [workspaceMembers, setWorkspaceMembers] = useState([])
 
+  const token = localStorage.getItem("token")
+
   const createProject = async (project) => {
     try {
-      const response = await axios.post(URL, project, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects`, project, {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      setProjects(prev => [...prev, response.data])
-      setSelectedProject(response.data)
-    } catch (error) {
-      console.error(error)
-    }
+      setProjects([...projects, response.data])
+    } catch (error) { console.error(error) }
   }
 
   const createWorkspace = async (workspace) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/`, workspace, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`, workspace, {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      setWorkspaces(prev => [...prev, response.data])
-      setSelectedWorkspace(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const createModule = async (module) => {
-    try {
-      if (!token) {
-        console.error("NO TOKEN!")
-        return
-      }
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/modules`, module, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      setModules(prev => [...prev, response.data])
-      setSelectedModule(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const createTask = async (task) => {
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/create`, task, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      setTasks(prev => [...prev, response.data])
-    } catch (error) {
-      console.error(error)
-    }
+      setWorkspaces([...workspaces, response.data])
+    } catch (error) { console.error(error) }
   }
 
   const deleteWorkspace = async () => {
     if (!selectedWorkspace) return
+    if (!window.confirm("Are you sure you want to delete this workspace?")) return
     try {
-      const workspace_id = selectedWorkspace.id
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${workspace_id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${selectedWorkspace.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      setWorkspaces(prev => prev.filter(w => w.id !== workspace_id))
-      const remaining = workspaces.filter(w => w.id !== workspace_id)
-      setSelectedWorkspace(remaining.length > 0 ? remaining[0] : null)
-    } catch (error) {
-      console.error(error)
-    }
+      setWorkspaces(workspaces.filter(ws => ws.id !== selectedWorkspace.id))
+      setSelectedWorkspace(null)
+    } catch (error) { console.error(error) }
+  }
+
+  const createModule = async (module) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/modules`, module, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setModules([...modules, response.data])
+    } catch (error) { console.error(error) }
+  }
+
+  const createTask = async (taskData) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/create`, taskData, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setTasks([...tasks, response.data])
+    } catch (error) { console.error(error) }
   }
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
-      const data = await getWorkspace.getWorkspaces()
-      setWorkspaces(data)
-      if (data.length > 0) setSelectedWorkspace(data[0])
+      const res = await getWorkspace.getWorkspaces()
+      setWorkspaces(res || [])
+      if (res && res.length > 0) setSelectedWorkspace(res[0])
     }
     fetchWorkspaces()
   }, [])
@@ -125,13 +93,14 @@ function ProjectsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setProjects(res.data)
-      setSelectedProject(res.data.length > 0 ? res.data[0] : null)
+      if (res.data.length > 0) setSelectedProject(res.data[0])
+      else setSelectedProject(null)
     }
     fetchProjects()
   }, [selectedWorkspace])
 
   return (
-    <div className="flex flex-row items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50">
+    <div className="flex flex-row min-h-screen bg-enterprise-light font-sans text-enterprise-dark">
       <Sidebar
         createProject={createProject}
         createWorkspace={createWorkspace}
@@ -143,14 +112,14 @@ function ProjectsPage() {
         workspaces={workspaces}
         selectedWorkspace={selectedWorkspace}
         setSelectedWorkspace={setSelectedWorkspace}
-        modules={modules}
-        setModules={setModules}
-        createModule={createModule}
-        createTask={createTask}
-        tasks={tasks}
-        setTasks={setTasks}
         selectedModule={selectedModule}
         setSelectedModule={setSelectedModule}
+        modules={modules}
+        setModules={setModules}
+        tasks={tasks}
+        setTasks={setTasks}
+        createModule={createModule}
+        createTask={createTask}
         workspaceMembers={workspaceMembers}
       />
       <ProjectDetails
@@ -162,7 +131,6 @@ function ProjectsPage() {
         workspaceMembers={workspaceMembers}
         createTask={createTask}
         onCreateModule={() => {
-          // Trigger module creation from sidebar
           const event = new CustomEvent('open-module-modal')
           window.dispatchEvent(event)
         }}

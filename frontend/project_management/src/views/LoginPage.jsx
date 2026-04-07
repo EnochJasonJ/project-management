@@ -10,22 +10,33 @@ function LoginPage() {
   }, [navigate])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-pink-50 to-purple-50 relative overflow-hidden flex items-center justify-center">
-      {/* Background decorative blobs */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-pink-200 via-purple-200 to-transparent rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-violet-200 via-pink-100 to-transparent rounded-full blur-3xl opacity-50 translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+    <div className="min-h-screen bg-enterprise-light flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Structural background elements */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-enterprise-dark" />
+      
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="inline-block px-3 py-1 bg-enterprise-dark text-white text-[10px] font-bold uppercase tracking-[0.3em] rounded mb-4">
+            Authorized Personnel Only
+          </div>
+          <h1 className="text-2xl font-bold text-enterprise-dark tracking-tighter">TASKFLOW SYSTEMS</h1>
+        </div>
+        
+        <LoginForm />
+        
+        <p className="mt-8 text-center text-[10px] font-bold text-enterprise-muted uppercase tracking-widest italic">
+          High-performance project orchestration
+        </p>
+      </div>
 
-      <LoginForm />
-
-      {/* Back to home link */}
       <a
         href="/"
-        className="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-purple-600 transition-colors duration-200"
+        className="absolute top-8 left-8 flex items-center gap-2 text-enterprise-muted hover:text-enterprise-dark font-bold uppercase text-[9px] tracking-widest transition-colors group"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg className="w-3 h-3 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
         </svg>
-        Back to home
+        Return to Portal
       </a>
     </div>
   )

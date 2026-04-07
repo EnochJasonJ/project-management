@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faXmark, faPlus, faSignOutAlt, faTrash, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faXmark, faPlus, faSignOutAlt, faTrash, faChevronDown, faFolder, faLayerGroup, faTasks } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
 import Avatar from './Avatar'
-import Email from './Email'
 import ListProjects from './ListProjects'
 import CreateProjectModal from './CreateProjectModal'
 import CreateWorkspaceModal from './CreateWorkspaceModal'
 import CreateModuleModal from './CreateModuleModal'
-import fetchTasks from '../utils/getTasks'
 import CreateTaskModal from './CreateTaskModal'
 
 
@@ -42,7 +40,7 @@ function Sidebar({
   const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false)
   const navigate = useNavigate()
   const userName = localStorage.getItem("user")
-  const email = localStorage.getItem("email")
+  const emailId = localStorage.getItem("email")
 
   const collapse = () => {
     if (!collapsed) {
@@ -54,14 +52,11 @@ function Sidebar({
     }
   }
 
-  
-
   const logout = () => {
     localStorage.removeItem("token")
     navigate("/login")
   }
 
-  // Listen for module modal open event from ProjectDetails
   useEffect(() => {
     const handleOpenModuleModal = () => setShowModuleModal(true)
     window.addEventListener('open-module-modal', handleOpenModuleModal)
@@ -69,7 +64,7 @@ function Sidebar({
   }, [])
 
   return (
-    <div>
+    <div className="relative">
       {showProjectModal && (
         <CreateProjectModal
           createProject={createProject}
@@ -95,63 +90,56 @@ function Sidebar({
 
       {showTaskModal && (
         <CreateTaskModal
-          createTask={createTask}
-          selectedWorkspace={selectedWorkspace}
-          selectedModule={selectedModule}
+          modules={modules}
           workspaceMembers={workspaceMembers}
+          onCreateTask={(taskData) => {
+            createTask(taskData)
+            setShowTaskModal(false)
+          }}
           onClose={() => setShowTaskModal(false)}
         />
       )}
 
-      {/* Collapsed toggle button */}
       {collapsed && showToggle && (
         <button
           onClick={collapse}
-          className="fixed top-4 left-4 z-50 bg-white/80 backdrop-blur-sm hover:bg-white shadow-lg rounded-full flex items-center justify-center h-10 w-10 transition-all duration-300 hover:scale-110"
+          className="fixed top-4 left-4 z-50 bg-enterprise-dark text-white shadow-md rounded-md flex items-center justify-center h-10 w-10 hover:bg-enterprise-accent transition-all"
         >
-          <FontAwesomeIcon icon={faBars} className="text-gray-600" />
+          <FontAwesomeIcon icon={faBars} />
         </button>
       )}
 
-      {/* Sidebar */}
       <div
         id="sidebar-container"
-        className={`bg-white/70 backdrop-blur-xl h-[100vh] fixed top-0 left-0 border-r border-white/50 shadow-lg shadow-purple-100 transform z-40 transition-all duration-500 ${collapsed ? '-translate-x-full' : 'translate-x-0'}`}
+        className={`bg-enterprise-dark h-[100vh] fixed top-0 left-0 border-r border-white/10 shadow-xl transform z-40 transition-all duration-300 ${collapsed ? '-translate-x-full' : 'translate-x-0'} w-64`}
       >
-        <div className="flex flex-col h-full justify-between p-4">
-          {/* Top section */}
-          <div>
-            {/* Header */}
-            <div className="flex flex-row items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Avatar name={userName} />
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">{userName}</p>
-                  <p className="text-xs text-gray-500">{email}</p>
-                </div>
+        <div className="flex flex-col h-full">
+          {/* User Header */}
+          <div className="p-6 border-b border-white/5">
+            <div className="flex items-center gap-3">
+              <Avatar name={userName} />
+              <div className="overflow-hidden">
+                <p className="font-bold text-white text-sm truncate">{userName}</p>
+                <p className="text-[11px] text-enterprise-muted truncate uppercase tracking-wider">{emailId}</p>
               </div>
-              <button
-                onClick={collapse}
-                className="hover:bg-gray-100 rounded-full flex items-center justify-center h-8 w-8 transition-colors"
-              >
-                <FontAwesomeIcon icon={faXmark} className="text-gray-500" />
-              </button>
             </div>
+          </div>
 
-            {/* Workspace selector */}
-            <div className="relative mb-4">
+          {/* Workspace Switcher */}
+          <div className="px-4 py-4">
+            <div className="relative">
               <button
                 onClick={() => setShowWorkspaceDropdown(!showWorkspaceDropdown)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100 hover:border-purple-200 transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2 bg-white/5 hover:bg-white/10 rounded border border-white/10 text-white transition-all"
               >
-                <span className="font-medium text-gray-700 truncate">
+                <span className="text-xs font-semibold truncate">
                   {selectedWorkspace?.name || "Select Workspace"}
                 </span>
-                <FontAwesomeIcon icon={faChevronDown} className="text-gray-400 text-sm" />
+                <FontAwesomeIcon icon={faChevronDown} className="text-white/30 text-[10px]" />
               </button>
 
               {showWorkspaceDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#2d3748] rounded shadow-2xl border border-white/10 overflow-hidden z-50">
                   {workspaces.map(ws => (
                     <button
                       key={ws.id}
@@ -159,7 +147,7 @@ function Sidebar({
                         setSelectedWorkspace(ws)
                         setShowWorkspaceDropdown(false)
                       }}
-                      className="w-full px-4 py-2.5 text-left hover:bg-purple-50 transition-colors text-sm"
+                      className="w-full px-4 py-2.5 text-left hover:bg-enterprise-accent text-white text-xs font-medium transition-colors border-b border-white/5 last:border-0"
                     >
                       {ws.name}
                     </button>
@@ -167,57 +155,34 @@ function Sidebar({
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="space-y-2">
-              <button
-                onClick={() => setShowProjectModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700 transition-all duration-200"
-              >
-                <FontAwesomeIcon icon={faPlus} className="text-purple-500" />
-                <span className="font-medium text-sm">New Project</span>
-              </button>
-
-              <button
-                onClick={() => setShowWorkspaceModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700 transition-all duration-200"
-              >
-                <FontAwesomeIcon icon={faPlus} className="text-pink-500" />
-                <span className="font-medium text-sm">New Workspace</span>
-              </button>
-
-              <button
-                onClick={() => setShowModuleModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700 transition-all duration-200"
-              >
-                <FontAwesomeIcon icon={faPlus} className="text-pink-500" />
-                <span className="font-medium text-sm">New Module</span>
-              </button>
-
-              <button
-                onClick={() => setShowTaskModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700 transition-all duration-200"
-              >
-                <FontAwesomeIcon icon={faPlus} className="text-pink-500" />
-                <span className="font-medium text-sm">New Task</span>
-              </button>
-
-              {selectedWorkspace && (
-                <button
-                  onClick={deleteWorkspace}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200"
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                  <span className="font-medium text-sm">Delete Workspace</span>
-                </button>
-              )}
+          {/* Navigation */}
+          <div className="flex-1 overflow-y-auto px-2 space-y-1 py-2">
+            <div className="px-3 mb-2">
+              <p className="text-[10px] font-bold text-enterprise-muted uppercase tracking-[0.15em]">Main</p>
             </div>
+            
+            <button
+              onClick={() => setShowProjectModal(true)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-xs font-medium"
+            >
+              <FontAwesomeIcon icon={faPlus} className="text-enterprise-muted" />
+              <span>New Project</span>
+            </button>
 
-            {/* Projects list */}
-            <div className="mt-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
-                Projects
-              </h3>
+            <button
+              onClick={() => setShowWorkspaceModal(true)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-xs font-medium"
+            >
+              <FontAwesomeIcon icon={faPlus} className="text-enterprise-muted" />
+              <span>New Workspace</span>
+            </button>
+
+            <div className="pt-4 px-3 mb-2">
+              <p className="text-[10px] font-bold text-enterprise-muted uppercase tracking-[0.15em]">Projects</p>
+            </div>
+            <div className="px-1 max-h-[40vh] overflow-y-auto custom-scrollbar">
               <ListProjects
                 projects={projects}
                 selectedProject={selectedProject}
@@ -233,14 +198,25 @@ function Sidebar({
             </div>
           </div>
 
-          {/* Bottom - Logout */}
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
-          >
-            <FontAwesomeIcon icon={faSignOutAlt} />
-            <span className="font-medium text-sm">Logout</span>
-          </button>
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-white/5 space-y-2">
+            {selectedWorkspace && (
+              <button
+                onClick={deleteWorkspace}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded text-red-400 hover:text-red-300 hover:bg-red-400/5 transition-all text-xs font-medium"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+                <span>Delete Workspace</span>
+              </button>
+            )}
+            <button
+              onClick={logout}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-xs font-medium"
+            >
+              <FontAwesomeIcon icon={faSignOutAlt} />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
