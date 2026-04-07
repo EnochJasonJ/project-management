@@ -20,13 +20,13 @@ function ProjectDetails({
 
   if (!selectedProject) {
     return (
-      <div className="ml-64 flex-1 flex items-center justify-center bg-enterprise-light">
+      <div className="ml-72 flex-1 flex items-center justify-center bg-enterprise-light">
         <div className="text-center p-12">
-          <div className="w-20 h-20 bg-white shadow-sm border border-enterprise-muted/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <FontAwesomeIcon icon={faFolder} className="text-2xl text-enterprise-muted" />
+          <div className="w-24 h-24 bg-white shadow-md border border-enterprise-muted/20 rounded-2xl flex items-center justify-center mx-auto mb-8">
+            <FontAwesomeIcon icon={faFolder} className="text-3xl text-enterprise-muted" />
           </div>
-          <h2 className="text-lg font-bold text-enterprise-dark tracking-tight">Project Dashboard</h2>
-          <p className="text-enterprise-muted text-sm mt-1">Select a project from the sidebar to view metrics</p>
+          <h2 className="text-xl font-bold text-enterprise-dark tracking-tight uppercase">Operational Dashboard</h2>
+          <p className="text-enterprise-muted text-base mt-2 font-medium">Select a project context to view metrics</p>
         </div>
       </div>
     )
@@ -42,7 +42,7 @@ function ProjectDetails({
   }
 
   return (
-    <div className="ml-64 flex-1 min-h-screen bg-enterprise-light p-8 overflow-y-auto">
+    <div className="ml-72 flex-1 min-h-screen bg-enterprise-light p-10 overflow-y-auto">
       {showTaskModal && (
         <CreateTaskModal
           modules={modules}
@@ -58,43 +58,43 @@ function ProjectDetails({
       )}
 
       {/* Header Card */}
-      <div className="mb-8 bg-white border border-enterprise-muted/20 shadow-sm rounded-xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-enterprise-dark rounded-lg flex items-center justify-center shadow-md">
-              <FontAwesomeIcon icon={faFolder} className="text-white text-xl" />
+      <div className="mb-10 bg-white border border-enterprise-muted/20 shadow-sm rounded-2xl p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-enterprise-dark rounded-xl flex items-center justify-center shadow-lg">
+              <FontAwesomeIcon icon={faFolder} className="text-white text-3xl" />
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-enterprise-dark tracking-tight">
+              <div className="flex items-center gap-4">
+                <h1 className="text-3xl font-bold text-enterprise-dark tracking-tighter">
                   {selectedProject.name}
                 </h1>
-                <span className="bg-enterprise-light text-enterprise-dark text-[10px] font-bold px-2 py-0.5 rounded border border-enterprise-muted/30 uppercase tracking-wider">
+                <span className="bg-enterprise-light text-enterprise-dark text-xs font-bold px-3 py-1 rounded-md border border-enterprise-muted/30 uppercase tracking-widest">
                   {selectedProject.status}
                 </span>
               </div>
-              <p className="text-enterprise-muted text-xs font-medium mt-0.5">{selectedProject.description || 'No project description provided.'}</p>
+              <p className="text-enterprise-muted text-base font-medium mt-1 italic">{selectedProject.description || 'System description pending...'}</p>
             </div>
           </div>
           <button
             onClick={() => setShowTaskModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-enterprise-dark text-white rounded-md hover:bg-enterprise-accent transition-all shadow-sm text-xs font-bold uppercase tracking-widest"
+            className="flex items-center gap-3 px-6 py-3 bg-enterprise-dark text-white rounded-lg hover:bg-enterprise-accent transition-all shadow-md text-sm font-bold uppercase tracking-[0.1em]"
           >
             <FontAwesomeIcon icon={faPlus} />
-            Create Task
+            Add Operation
           </button>
         </div>
 
-        <div className="flex items-center gap-6 border-t border-enterprise-muted/10 pt-4">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-enterprise-muted uppercase tracking-wider">Priority</span>
+        <div className="flex items-center gap-10 border-t border-enterprise-muted/10 pt-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold text-enterprise-muted uppercase tracking-[0.2em]">Priority</span>
             {isEditingPriority ? (
               <select
                 value={selectedProject.priority}
                 onChange={(e) => handlePriorityChange(e.target.value)}
                 onBlur={() => setIsEditingPriority(false)}
                 autoFocus
-                className="text-[10px] font-bold uppercase border border-enterprise-muted/30 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-enterprise-dark bg-white"
+                className="text-sm font-bold uppercase border border-enterprise-muted/30 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-enterprise-dark bg-white"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -103,8 +103,8 @@ function ProjectDetails({
             ) : (
               <button 
                 onClick={() => setIsEditingPriority(true)}
-                className={`text-[10px] font-bold px-2 py-0.5 rounded transition-all hover:scale-105 ${
-                  selectedProject.priority === 'high' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-enterprise-light text-enterprise-dark border border-enterprise-muted/20'
+                className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all hover:scale-105 border ${
+                  selectedProject.priority === 'high' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-enterprise-light text-enterprise-dark border-enterprise-muted/20'
                 }`}
               >
                 {selectedProject.priority.toUpperCase()}
@@ -113,10 +113,10 @@ function ProjectDetails({
           </div>
           
           {selectedProject.due_date && (
-            <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faClock} className="text-enterprise-muted text-[10px]" />
-              <span className="text-[10px] font-bold text-enterprise-muted uppercase tracking-widest">
-                Due: {new Date(selectedProject.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            <div className="flex items-center gap-3">
+              <FontAwesomeIcon icon={faClock} className="text-enterprise-muted text-xs" />
+              <span className="text-xs font-bold text-enterprise-muted uppercase tracking-[0.2em]">
+                Target: {new Date(selectedProject.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
           )}
@@ -124,20 +124,20 @@ function ProjectDetails({
       </div>
 
       {/* Analytics Grid */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-4 gap-6 mb-10">
         {[
-          { label: 'Total Tasks', value: totalTasks, icon: faTasks, color: 'text-enterprise-dark', bg: 'bg-white' },
-          { label: 'In Progress', value: inProgressTasks, icon: faClock, color: 'text-blue-600', bg: 'bg-white' },
-          { label: 'Completed', value: completedTasks, icon: faCheckCircle, color: 'text-green-600', bg: 'bg-white' },
-          { label: 'Modules', value: modules.length, icon: faUsers, color: 'text-enterprise-muted', bg: 'bg-white' }
+          { label: 'System Tasks', value: totalTasks, icon: faTasks, color: 'text-enterprise-dark' },
+          { label: 'Active Flow', value: inProgressTasks, icon: faClock, color: 'text-blue-600' },
+          { label: 'Deployed', value: completedTasks, icon: faCheckCircle, color: 'text-green-600' },
+          { label: 'Sub-Modules', value: modules.length, icon: faUsers, color: 'text-enterprise-muted' }
         ].map((stat, i) => (
-          <div key={i} className={`${stat.bg} p-5 rounded-xl border border-enterprise-muted/20 shadow-sm flex items-center gap-4`}>
-            <div className="w-10 h-10 bg-enterprise-light rounded-lg flex items-center justify-center border border-enterprise-muted/10">
-              <FontAwesomeIcon icon={stat.icon} className={`${stat.color} text-sm`} />
+          <div key={i} className="bg-white p-6 rounded-2xl border border-enterprise-muted/20 shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-enterprise-light rounded-xl flex items-center justify-center border border-enterprise-muted/10 shadow-inner">
+              <FontAwesomeIcon icon={stat.icon} className={`${stat.color} text-lg`} />
             </div>
             <div>
-              <p className="text-xl font-bold text-enterprise-dark leading-none">{stat.value}</p>
-              <p className="text-[10px] font-black text-enterprise-muted uppercase tracking-wider mt-1">{stat.label}</p>
+              <p className="text-2xl font-bold text-enterprise-dark leading-none tracking-tight">{stat.value}</p>
+              <p className="text-xs font-bold text-enterprise-muted uppercase tracking-widest mt-2">{stat.label}</p>
             </div>
           </div>
         ))}
@@ -145,37 +145,37 @@ function ProjectDetails({
 
       {/* Content Area */}
       {modules.length === 0 ? (
-        <div className="bg-white rounded-xl border border-enterprise-muted/20 p-16 text-center shadow-sm">
-          <div className="w-16 h-16 bg-enterprise-light rounded-full flex items-center justify-center mx-auto mb-6 border border-enterprise-muted/10">
-            <FontAwesomeIcon icon={faLayerGroup} className="text-xl text-enterprise-muted" />
+        <div className="bg-white rounded-2xl border border-enterprise-muted/20 p-20 text-center shadow-sm">
+          <div className="w-20 h-20 bg-enterprise-light rounded-full flex items-center justify-center mx-auto mb-8 border border-enterprise-muted/10">
+            <FontAwesomeIcon icon={faLayerGroup} className="text-3xl text-enterprise-muted" />
           </div>
-          <h3 className="text-lg font-bold text-enterprise-dark uppercase tracking-tight mb-2">Project Architecture</h3>
-          <p className="text-enterprise-muted text-sm mb-8 max-w-xs mx-auto font-medium">
-            Define your project modules to begin structured task management.
+          <h3 className="text-2xl font-bold text-enterprise-dark uppercase tracking-widest mb-4">Initialize System Architecture</h3>
+          <p className="text-enterprise-muted text-base mb-10 max-w-sm mx-auto font-medium leading-relaxed">
+            Construct operational modules to begin multi-tenant task distribution and resource tracking.
           </p>
           <button
             onClick={onCreateModule}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-enterprise-dark text-white font-bold rounded-md hover:bg-enterprise-accent transition-all shadow-sm uppercase text-[10px] tracking-[0.2em]"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-enterprise-dark text-white font-bold rounded-lg hover:bg-enterprise-accent transition-all shadow-lg uppercase text-xs tracking-[0.2em]"
           >
             <FontAwesomeIcon icon={faPlus} />
-            Initialize Module
+            Instantiate Module
           </button>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="bg-white rounded-xl border border-enterprise-muted/20 p-16 text-center shadow-sm">
-          <div className="w-16 h-16 bg-enterprise-light rounded-full flex items-center justify-center mx-auto mb-6 border border-enterprise-muted/10">
-            <FontAwesomeIcon icon={faTasks} className="text-xl text-enterprise-muted" />
+        <div className="bg-white rounded-2xl border border-enterprise-muted/20 p-20 text-center shadow-sm">
+          <div className="w-20 h-20 bg-enterprise-light rounded-full flex items-center justify-center mx-auto mb-8 border border-enterprise-muted/10">
+            <FontAwesomeIcon icon={faTasks} className="text-3xl text-enterprise-muted" />
           </div>
-          <h3 className="text-lg font-bold text-enterprise-dark uppercase tracking-tight mb-2">Roadmap Planning</h3>
-          <p className="text-enterprise-muted text-sm mb-8 max-w-xs mx-auto font-medium">
-            Project modules defined. Proceed to add operational tasks.
+          <h3 className="text-2xl font-bold text-enterprise-dark uppercase tracking-widest mb-4">Queue Task Payload</h3>
+          <p className="text-enterprise-muted text-base mb-10 max-w-sm mx-auto font-medium leading-relaxed">
+            Module registry verified. No active tasks detected in this project sector.
           </p>
           <button
             onClick={() => setShowTaskModal(true)}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-enterprise-dark text-white font-bold rounded-md hover:bg-enterprise-accent transition-all shadow-sm uppercase text-[10px] tracking-[0.2em]"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-enterprise-dark text-white font-bold rounded-lg hover:bg-enterprise-accent transition-all shadow-lg uppercase text-xs tracking-[0.2em]"
           >
             <FontAwesomeIcon icon={faPlus} />
-            Deploy Task
+            Deploy Logic
           </button>
         </div>
       ) : (

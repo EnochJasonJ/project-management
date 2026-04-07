@@ -89,7 +89,7 @@ function ListProjects({
     }
 
     return (
-        <div className='flex flex-col w-full space-y-0.5'>
+        <div className='flex flex-col w-full space-y-1'>
             {projects.map((project) => {
                 const isProjectSelected = selectedProject?.id === project.id
                 const projectModuleList = projectModules[project.id] || []
@@ -101,15 +101,15 @@ function ListProjects({
                             onMouseEnter={() => setHoveredItem(`project-${project.id}`)}
                             onMouseLeave={() => setHoveredItem(null)}
                             onClick={() => setSelectedProject(project)}
-                            className={`group flex items-center gap-2.5 px-3 py-2 rounded transition-all cursor-pointer ${
+                            className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
                                 isProjectSelected
-                                    ? "bg-white/10 text-white"
+                                    ? "bg-white/10 text-white shadow-sm"
                                     : "text-enterprise-muted hover:text-white hover:bg-white/5"
                             }`}
                         >
                             <FontAwesomeIcon
                                 icon={isProjectSelected ? (isExpanded ? faCaretDown : faCaretRight) : faCaretRight}
-                                className={`text-[10px] w-3 transition-opacity ${isProjectSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                                className={`text-xs w-3 transition-opacity ${isProjectSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                                 onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
                             />
 
@@ -119,17 +119,17 @@ function ListProjects({
                                 size="sm"
                             />
 
-                            <span className="text-xs font-medium truncate flex-1 tracking-tight">
+                            <span className="text-sm font-semibold truncate flex-1 tracking-tight">
                                 {project.name}
                             </span>
 
                             {hoveredItem === `project-${project.id}` && (
-                                <FontAwesomeIcon icon={faEllipsisV} className="text-[10px] opacity-40 hover:opacity-100 p-1" />
+                                <FontAwesomeIcon icon={faEllipsisV} className="text-xs opacity-40 hover:opacity-100 p-1" />
                             )}
                         </div>
 
                         {showModules && (
-                            <div className='ml-4 border-l border-white/5 space-y-0.5 mt-0.5'>
+                            <div className='ml-4 border-l border-white/5 space-y-1 mt-1'>
                                 {projectModuleList.map((module) => {
                                     const isModuleSelected = selectedModule?.id === module.id;
                                     const isModuleExpanded = !!expandedModules[module.id];
@@ -141,7 +141,7 @@ function ListProjects({
                                                 onMouseEnter={() => setHoveredItem(`module-${module.id}`)}
                                                 onMouseLeave={() => setHoveredItem(null)}
                                                 onClick={(e) => toggleModule(e, module)}
-                                                className={`group flex items-center gap-2 py-1.5 px-3 ml-2 rounded cursor-pointer transition-all ${
+                                                className={`group flex items-center gap-3 py-2 px-3 ml-2 rounded-lg cursor-pointer transition-all ${
                                                     isModuleSelected
                                                         ? "bg-white/5 text-white"
                                                         : "text-enterprise-muted hover:text-white hover:bg-white/5"
@@ -149,34 +149,34 @@ function ListProjects({
                                             >
                                                 <FontAwesomeIcon
                                                     icon={isModuleExpanded ? faCaretDown : faCaretRight}
-                                                    className="text-[8px] opacity-40"
+                                                    className="text-[10px] opacity-40"
                                                 />
                                                 <FontAwesomeIcon
                                                     icon={faThLarge}
-                                                    className={`text-[10px] ${isModuleSelected ? 'text-blue-400' : 'opacity-40'}`}
+                                                    className={`text-xs ${isModuleSelected ? 'text-blue-400' : 'opacity-40'}`}
                                                 />
-                                                <span className="text-[11px] font-medium flex-1 truncate">
+                                                <span className="text-xs font-semibold flex-1 truncate">
                                                     {module.name}
                                                 </span>
                                                 {hoveredItem === `module-${module.id}` && (
-                                                    <FontAwesomeIcon icon={faTrash} className="text-[10px] text-red-400/60 hover:text-red-400" onClick={(e) => { e.stopPropagation(); deleteModule(module.id); }} />
+                                                    <FontAwesomeIcon icon={faTrash} className="text-xs text-red-400/60 hover:text-red-400" onClick={(e) => { e.stopPropagation(); deleteModule(module.id); }} />
                                                 )}
                                             </div>
 
                                             {isModuleExpanded && (
-                                                <div className='ml-8 space-y-0.5 py-1'>
+                                                <div className='ml-10 space-y-1 py-1'>
                                                     {moduleTasks.map(task => {
                                                         const statusInfo = getTaskStatusIcon(task.status);
                                                         return (
                                                             <div
                                                                 key={task.id}
-                                                                className="flex items-center gap-2 py-1 px-2 text-[10px] text-enterprise-muted hover:text-white transition-colors cursor-default"
+                                                                className="flex items-center gap-3 py-1.5 px-2 text-[11px] text-enterprise-muted hover:text-white transition-colors cursor-default"
                                                             >
                                                                 <FontAwesomeIcon
                                                                     icon={statusInfo.icon}
                                                                     className={statusInfo.color}
                                                                 />
-                                                                <span className="truncate flex-1">{task.title}</span>
+                                                                <span className="truncate flex-1 font-medium">{task.title}</span>
                                                             </div>
                                                         )
                                                     })}

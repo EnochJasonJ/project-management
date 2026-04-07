@@ -10,7 +10,7 @@ function LandingPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-white font-sans text-enterprise-dark">
+    <div className="min-h-screen bg-gradient-to-br from-white via-pink-50 to-slate-100 font-sans text-enterprise-dark">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-12 py-6 border-b border-enterprise-light">
         <div className="text-xl font-bold tracking-tighter border-l-4 border-enterprise-dark pl-3">

@@ -30,7 +30,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const [filterConfig, setFilterConfig] = useState({ status: [], priority: [], assignee: [] })
     const [showFilters, setShowFilters] = useState(false)
     const [selectedTasks, setSelectedTasks] = useState(new Set())
-    const [editingCell, setEditingCell] = useState(null) // { taskId, field }
+    const [editingCell, setEditingCell] = useState(null)
     const [hoveredRow, setHoveredRow] = useState(null)
     const [taskToEdit, setTaskToEdit] = useState(null)
     const [showActionsMenu, setShowActionsMenu] = useState(null)
@@ -175,46 +175,51 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const getSortIcon = (k) => sortConfig.key !== k ? faSort : (sortConfig.direction === 'asc' ? faSortUp : faSortDown)
 
     const renderActionsMenu = (task) => (
-        <div className="absolute right-0 top-8 z-30 bg-white rounded shadow-xl border border-enterprise-muted/20 py-1 w-40 overflow-hidden">
-            <button onClick={(e) => { e.stopPropagation(); setTaskToEdit(task); setShowActionsMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-enterprise-dark hover:bg-enterprise-light transition-colors">
-                <FontAwesomeIcon icon={faPen} className="text-enterprise-muted" />
-                Edit Task
+        <div className="absolute right-0 top-8 z-30 bg-white rounded shadow-xl border border-enterprise-muted/20 py-1 w-48 overflow-hidden">
+            <button onClick={(e) => { e.stopPropagation(); setTaskToEdit(task); setShowActionsMenu(null); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-enterprise-dark hover:bg-enterprise-light transition-colors">
+                <FontAwesomeIcon icon={faPen} className="text-enterprise-muted w-4" />
+                Edit Task Details
             </button>
-            <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); setShowActionsMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                <FontAwesomeIcon icon={faTrash} />
-                Delete Task
+            <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); setShowActionsMenu(null); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-enterprise-muted/5">
+                <FontAwesomeIcon icon={faTrash} className="w-4" />
+                Destroy Entity
             </button>
         </div>
     )
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-enterprise-muted/20 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-enterprise-muted/10 bg-white">
-                <div className="flex items-center gap-3">
+        <div className="bg-white rounded-xl shadow-sm border border-enterprise-muted/20 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-enterprise-muted/10 bg-white">
+                <div className="flex items-center gap-4">
                     <div className="relative">
-                        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-enterprise-muted text-[10px]" />
-                        <input type="text" placeholder="Search operational tasks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 pr-3 py-1.5 text-xs bg-white border border-enterprise-muted/30 rounded focus:outline-none focus:ring-1 focus:ring-enterprise-dark w-64 placeholder:text-enterprise-muted/50 font-medium text-enterprise-dark" />
+                        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-enterprise-muted text-xs" />
+                        <input type="text" placeholder="Search operational tasks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 text-sm bg-white border border-enterprise-muted/30 rounded-md focus:outline-none focus:ring-1 focus:ring-enterprise-dark w-80 placeholder:text-enterprise-muted/50 font-medium text-enterprise-dark" />
                     </div>
-                    <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border transition-all ${filterConfig.status.length > 0 || filterConfig.priority.length > 0 ? 'bg-enterprise-dark text-white border-enterprise-dark' : 'bg-white border-enterprise-muted/30 text-enterprise-muted hover:border-enterprise-dark'}`}><FontAwesomeIcon icon={faFilter} /> Filter</button>
+                    <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest rounded border transition-all ${filterConfig.status.length > 0 || filterConfig.priority.length > 0 ? 'bg-enterprise-dark text-white border-enterprise-dark shadow-sm' : 'bg-white border-enterprise-muted/30 text-enterprise-muted hover:border-enterprise-dark'}`}><FontAwesomeIcon icon={faFilter} /> Filter Pipeline</button>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-enterprise-light p-0.5 rounded border border-enterprise-muted/20">
-                        {['table', 'board', 'list'].map(m => (
-                            <button key={m} onClick={() => setViewMode(m)} className={`p-1.5 rounded transition-all ${viewMode === m ? 'bg-white text-enterprise-dark shadow-sm' : 'text-enterprise-muted hover:text-enterprise-dark'}`}>
-                                <FontAwesomeIcon icon={m === 'table' ? faTable : (m === 'board' ? faThLarge : faList)} size="xs" />
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center bg-enterprise-light p-1 rounded-lg border border-enterprise-muted/20">
+                        {[
+                            { id: 'table', icon: faTable, label: 'Sheet' },
+                            { id: 'board', icon: faThLarge, label: 'Kanban' },
+                            { id: 'list', icon: faList, label: 'Stream' }
+                        ].map(m => (
+                            <button key={m.id} onClick={() => setViewMode(m.id)} className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-2 ${viewMode === m.id ? 'bg-white text-enterprise-dark shadow-sm' : 'text-enterprise-muted hover:text-enterprise-dark'}`}>
+                                <FontAwesomeIcon icon={m.icon} size="xs" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">{m.label}</span>
                             </button>
                         ))}
                     </div>
-                    <button onClick={onCreateTask} className="flex items-center gap-2 px-3 py-1.5 bg-enterprise-dark text-white text-[10px] font-bold uppercase tracking-widest rounded hover:bg-enterprise-accent transition-all shadow-sm"><FontAwesomeIcon icon={faPlus} /> New Task</button>
+                    <button onClick={onCreateTask} className="flex items-center gap-2 px-5 py-2 bg-enterprise-dark text-white text-xs font-bold uppercase tracking-widest rounded-md hover:bg-enterprise-accent transition-all shadow-md"><FontAwesomeIcon icon={faPlus} /> New Operation</button>
                 </div>
             </div>
 
             {selectedTasks.size > 0 && (
-                <div className="flex items-center justify-between px-6 py-2 bg-enterprise-dark/5 text-enterprise-dark border-b border-enterprise-muted/20">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{selectedTasks.size} Selected</span>
-                    <div className="flex items-center gap-4">
-                        <button className="text-[10px] font-bold uppercase tracking-widest hover:text-blue-600" onClick={handleBulkMarkAsDone}>Mark Completed</button>
-                        <button className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:text-red-700" onClick={handleBulkDeleteTasks}>Purge Tasks</button>
+                <div className="flex items-center justify-between px-8 py-3 bg-enterprise-dark text-white border-b border-enterprise-muted/20 animate-in slide-in-from-top-2 duration-200">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em]">{selectedTasks.size} Selected Units</span>
+                    <div className="flex items-center gap-10">
+                        <button className="text-[10px] font-black uppercase tracking-[0.2em] hover:text-blue-400 transition-colors" onClick={handleBulkMarkAsDone}>Batch Complete</button>
+                        <button className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 hover:text-red-300 transition-colors" onClick={handleBulkDeleteTasks}>Purge Selection</button>
                     </div>
                 </div>
             )}
@@ -224,102 +229,81 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                     <table className="w-full">
                         <thead className="bg-enterprise-light border-b border-enterprise-muted/20">
                             <tr>
-                                <th className="w-12 px-4 py-3 text-center"><input type="checkbox" checked={filteredTasks.length > 0 && selectedTasks.size === filteredTasks.length} onChange={(e) => e.target.checked ? setSelectedTasks(new Set(filteredTasks.map(t => t.id))) : setSelectedTasks(new Set())} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark" /></th>
-                                <th className="w-8"></th>
-                                {['title', 'status', 'priority', 'module', 'assignee', 'deadline'].map(k => (
-                                    <th key={k} className="px-4 py-3 text-left text-[10px] font-bold text-enterprise-muted uppercase tracking-widest cursor-pointer hover:bg-enterprise-muted/5 transition-colors" onClick={() => ['module', 'assignee'].includes(k) ? null : handleSort(k)}>
-                                        <div className="flex items-center gap-2">{k.replace('_', ' ')} {!['module', 'assignee'].includes(k) && <FontAwesomeIcon icon={getSortIcon(k)} className="opacity-30 text-[8px]" />}</div>
+                                <th className="w-14 px-4 py-4 text-center"><input type="checkbox" checked={filteredTasks.length > 0 && selectedTasks.size === filteredTasks.length} onChange={(e) => e.target.checked ? setSelectedTasks(new Set(filteredTasks.map(t => t.id))) : setSelectedTasks(new Set())} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-4 h-4" /></th>
+                                <th className="w-10"></th>
+                                {[
+                                    { key: 'title', label: 'Descriptor' },
+                                    { key: 'status', label: 'Lifecycle' },
+                                    { key: 'priority', label: 'Weight' },
+                                    { key: 'module', label: 'Domain' },
+                                    { key: 'assignee', label: 'Operator' },
+                                    { key: 'deadline', label: 'Deadline' }
+                                ].map(k => (
+                                    <th key={k.key} className="px-6 py-4 text-left text-[10px] font-black text-enterprise-muted uppercase tracking-[0.2em] cursor-pointer hover:bg-enterprise-muted/5 transition-colors" onClick={() => ['module', 'assignee'].includes(k.key) ? null : handleSort(k.key)}>
+                                        <div className="flex items-center gap-2">{k.label} {!['module', 'assignee'].includes(k.key) && <FontAwesomeIcon icon={getSortIcon(k.key)} className="opacity-30 text-[8px]" />}</div>
                                     </th>
                                 ))}
-                                <th className="w-12"></th>
+                                <th className="w-14"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-enterprise-muted/10">
                             {filteredTasks.map((task) => (
-                                <tr key={task.id} onMouseEnter={() => setHoveredRow(task.id)} onMouseLeave={() => setHoveredRow(null)} className={`group transition-colors ${selectedTasks.has(task.id) ? 'bg-blue-50/50' : 'hover:bg-enterprise-light/50'}`}>
-                                    <td className="px-4 py-3 text-center"><input type="checkbox" checked={selectedTasks.has(task.id)} onChange={() => toggleTaskSelection(task.id)} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark" /></td>
+                                <tr key={task.id} onMouseEnter={() => setHoveredRow(task.id)} onMouseLeave={() => setHoveredRow(null)} className={`group transition-colors ${selectedTasks.has(task.id) ? 'bg-blue-50/40' : 'hover:bg-enterprise-light/30'}`}>
+                                    <td className="px-4 py-4 text-center"><input type="checkbox" checked={selectedTasks.has(task.id)} onChange={() => toggleTaskSelection(task.id)} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-4 h-4" /></td>
                                     <td className="text-center opacity-0 group-hover:opacity-100 transition-opacity"><FontAwesomeIcon icon={faGripVertical} className="text-enterprise-muted/30" size="xs" /></td>
-                                    <td className="px-4 py-3"><div className="flex items-center gap-3"><FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-xs ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/30'}`} /><span className={`text-xs font-semibold ${task.status === 'done' ? 'line-through text-enterprise-muted/50' : 'text-enterprise-dark'}`}>{task.title}</span></div></td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-4">
+                                            <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-sm ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/30'}`} />
+                                            <span className={`text-sm font-bold tracking-tight ${task.status === 'done' ? 'line-through text-enterprise-muted/50' : 'text-enterprise-dark'}`}>{task.title}</span>
+                                        </div>
+                                    </td>
                                     
-                                    <td className="px-4 py-3">
+                                    <td className="px-6 py-4">
                                         {editingCell?.taskId === task.id && editingCell?.field === 'status' ? (
-                                            <select
-                                                value={task.status}
-                                                onChange={(e) => updateTaskStatus(task.id, e.target.value)}
-                                                onBlur={() => setEditingCell(null)}
-                                                autoFocus
-                                                className="text-[10px] font-bold uppercase border border-enterprise-muted/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-enterprise-dark bg-white"
-                                            >
-                                                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                                                    <option key={key} value={key}>{config.label}</option>
-                                                ))}
+                                            <select value={task.status} onChange={(e) => updateTaskStatus(task.id, e.target.value)} onBlur={() => setEditingCell(null)} autoFocus className="text-[10px] font-bold uppercase border border-enterprise-muted/30 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-enterprise-dark bg-white shadow-sm">
+                                                {Object.entries(STATUS_CONFIG).map(([key, config]) => <option key={key} value={key}>{config.label}</option>)}
                                             </select>
                                         ) : (
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); setEditingCell({ taskId: task.id, field: 'status' }); }}
-                                                className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all hover:scale-105 ${STATUS_CONFIG[task.status]?.color}`}
-                                            >
+                                            <button onClick={(e) => { e.stopPropagation(); setEditingCell({ taskId: task.id, field: 'status' }); }} className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all hover:shadow-sm ${STATUS_CONFIG[task.status]?.color}`}>
                                                 {STATUS_CONFIG[task.status]?.label}
                                             </button>
                                         )}
                                     </td>
 
-                                    <td className="px-4 py-3">
+                                    <td className="px-6 py-4">
                                         {editingCell?.taskId === task.id && editingCell?.field === 'priority' ? (
-                                            <select
-                                                value={task.priority}
-                                                onChange={(e) => updateTaskPriority(task.id, e.target.value)}
-                                                onBlur={() => setEditingCell(null)}
-                                                autoFocus
-                                                className="text-[10px] font-bold uppercase border border-enterprise-muted/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-enterprise-dark bg-white"
-                                            >
-                                                {Object.entries(PRIORITY_CONFIG).map(([key, config]) => (
-                                                    <option key={key} value={key}>{config.label}</option>
-                                                ))}
+                                            <select value={task.priority} onChange={(e) => updateTaskPriority(task.id, e.target.value)} onBlur={() => setEditingCell(null)} autoFocus className="text-[10px] font-bold uppercase border border-enterprise-muted/30 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-enterprise-dark bg-white shadow-sm">
+                                                {Object.entries(PRIORITY_CONFIG).map(([key, config]) => <option key={key} value={key}>{config.label}</option>)}
                                             </select>
                                         ) : (
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); setEditingCell({ taskId: task.id, field: 'priority' }); }}
-                                                className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider transition-all hover:scale-105 border border-black/5 ${PRIORITY_CONFIG[task.priority]?.bg} ${PRIORITY_CONFIG[task.priority]?.color}`}
-                                            >
+                                            <button onClick={(e) => { e.stopPropagation(); setEditingCell({ taskId: task.id, field: 'priority' }); }} className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all hover:shadow-sm border border-black/5 ${PRIORITY_CONFIG[task.priority]?.bg} ${PRIORITY_CONFIG[task.priority]?.color}`}>
                                                 {PRIORITY_CONFIG[task.priority]?.label}
                                             </button>
                                         )}
                                     </td>
 
-                                    <td className="px-4 py-3"><span className="text-[10px] font-medium text-enterprise-muted uppercase">{getModuleName(task.module_id)}</span></td>
+                                    <td className="px-6 py-4"><span className="text-[10px] font-bold text-enterprise-muted uppercase tracking-widest">{getModuleName(task.module_id)}</span></td>
                                     
-                                    <td className="px-4 py-3">
+                                    <td className="px-6 py-4">
                                         {editingCell?.taskId === task.id && editingCell?.field === 'assignee' ? (
-                                            <select
-                                                value={task.assigned_to || ''}
-                                                onChange={(e) => updateTaskAssignee(task.id, e.target.value)}
-                                                onBlur={() => setEditingCell(null)}
-                                                autoFocus
-                                                className="text-xs font-medium border border-enterprise-muted/30 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-enterprise-dark bg-white"
-                                            >
+                                            <select value={task.assigned_to || ''} onChange={(e) => updateTaskAssignee(task.id, e.target.value)} onBlur={() => setEditingCell(null)} autoFocus className="text-xs font-bold border border-enterprise-muted/30 rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-enterprise-dark bg-white shadow-sm">
                                                 <option value="">Unassigned</option>
-                                                {workspaceMembers.map(m => (
-                                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                                ))}
+                                                {workspaceMembers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                                             </select>
                                         ) : (
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); setEditingCell({ taskId: task.id, field: 'assignee' }); }}
-                                                className="flex items-center gap-2 hover:bg-enterprise-muted/5 p-1 rounded transition-colors"
-                                            >
+                                            <button onClick={(e) => { e.stopPropagation(); setEditingCell({ taskId: task.id, field: 'assignee' }); }} className="flex items-center gap-3 hover:bg-enterprise-muted/5 p-1 px-2 rounded-lg transition-colors border border-transparent hover:border-enterprise-muted/10">
                                                 {task.users ? (
                                                     <>
-                                                        <div className="w-6 h-6 rounded-full bg-enterprise-dark flex items-center justify-center text-[9px] text-white font-bold">{task.users.name.charAt(0)}</div>
-                                                        <span className="text-xs font-medium text-enterprise-dark">{task.users.name}</span>
+                                                        <div className="w-7 h-7 rounded bg-enterprise-dark flex items-center justify-center text-[10px] text-white font-bold shadow-sm">{task.users.name.charAt(0)}</div>
+                                                        <span className="text-sm font-semibold text-enterprise-dark">{task.users.name}</span>
                                                     </>
-                                                ) : <span className="text-xs font-medium text-enterprise-muted/40 italic">None</span>}
+                                                ) : <span className="text-sm font-semibold text-enterprise-muted/40 italic">Not Assigned</span>}
                                             </button>
                                         )}
                                     </td>
 
-                                    <td className="px-4 py-3">{task.deadline ? <div className={`text-[10px] font-bold uppercase tracking-widest ${new Date(task.deadline) < new Date() ? 'text-red-600' : 'text-enterprise-muted'}`}>{new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div> : <span className="text-[10px] font-bold text-enterprise-muted/20">---</span>}</td>
-                                    <td className="px-4 py-3 relative"><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className={`p-1 rounded hover:bg-enterprise-muted/10 transition-all ${hoveredRow === task.id || showActionsMenu === task.id ? 'opacity-100' : 'opacity-0'}`}><FontAwesomeIcon icon={faEllipsisV} className="text-enterprise-muted" size="xs" /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</td>
+                                    <td className="px-6 py-4">{task.deadline ? <div className={`text-[11px] font-bold uppercase tracking-widest ${new Date(task.deadline) < new Date() ? 'text-red-600' : 'text-enterprise-muted'}`}>{new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div> : <span className="text-[11px] font-bold text-enterprise-muted/20 uppercase tracking-widest">Pending</span>}</td>
+                                    <td className="px-4 py-4 relative text-right"><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className={`p-2 rounded-full hover:bg-enterprise-muted/10 transition-all ${hoveredRow === task.id || showActionsMenu === task.id ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}><FontAwesomeIcon icon={faEllipsisV} className="text-enterprise-muted" /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -328,18 +312,18 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             )}
 
             {viewMode === 'board' && (
-                <div className="flex gap-6 p-6 overflow-x-auto bg-enterprise-light/30 min-h-[600px]">
+                <div className="flex gap-8 p-10 overflow-x-auto bg-enterprise-light/20 min-h-[600px]">
                     {Object.entries(STATUS_CONFIG).map(([status, config]) => {
                         const statusTasks = filteredTasks.filter(t => t.status === status)
                         return (
-                            <div key={status} className="flex-shrink-0 w-72">
-                                <div className={`flex items-center justify-between mb-4 px-3 py-2 rounded-md border-b-2 border-enterprise-muted shadow-sm ${config.color}`}><div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]"><FontAwesomeIcon icon={config.icon} /><span>{config.label}</span></div><span className="text-[9px] font-black">{statusTasks.length}</span></div>
-                                <div className="space-y-3">
+                            <div key={status} className="flex-shrink-0 w-80">
+                                <div className={`flex items-center justify-between mb-6 px-4 py-3 rounded-lg border-b-2 border-enterprise-muted/30 shadow-sm ${config.color}`}><div className="flex items-center gap-3 font-bold uppercase tracking-[0.2em] text-xs"><FontAwesomeIcon icon={config.icon} /><span>{config.label}</span></div><span className="text-xs font-black text-enterprise-dark">{statusTasks.length}</span></div>
+                                <div className="space-y-4">
                                     {statusTasks.map(task => (
-                                        <div key={task.id} className="bg-white rounded-lg p-4 shadow-sm border border-enterprise-muted/10 hover:border-enterprise-muted/30 transition-all cursor-pointer relative group">
-                                            <div className="flex items-start justify-between mb-3"><h4 className={`text-xs font-bold text-enterprise-dark leading-tight tracking-tight ${task.status === 'done' ? 'line-through opacity-30' : ''}`}>{task.title}</h4><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark opacity-0 group-hover:opacity-100 transition-opacity p-1"><FontAwesomeIcon icon={faEllipsisV} size="xs" /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
-                                            <div className="flex flex-wrap gap-2 mb-4"><span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase tracking-widest ${PRIORITY_CONFIG[task.priority]?.bg} ${PRIORITY_CONFIG[task.priority]?.color}`}>{PRIORITY_CONFIG[task.priority]?.label}</span><span className="text-[8px] font-black text-enterprise-muted/60 bg-enterprise-light px-1.5 py-0.5 rounded border uppercase tracking-widest">{getModuleName(task.module_id)}</span></div>
-                                            <div className="flex items-center justify-between pt-3 border-t border-enterprise-light">{task.deadline ? <div className="flex items-center gap-1 text-[8px] font-bold text-enterprise-muted uppercase tracking-widest"><FontAwesomeIcon icon={faCalendar} className="text-enterprise-muted/50" /> {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div> : <div></div>}{task.users && <div className="w-6 h-6 rounded-full bg-enterprise-dark flex items-center justify-center text-[8px] text-white font-bold">{task.users.name.charAt(0)}</div>}</div>
+                                        <div key={task.id} className="bg-white rounded-xl p-6 shadow-sm border border-enterprise-muted/10 hover:border-enterprise-muted/30 hover:shadow-md transition-all cursor-pointer relative group">
+                                            <div className="flex items-start justify-between mb-4"><h4 className={`text-sm font-bold text-enterprise-dark leading-tight tracking-tight ${task.status === 'done' ? 'line-through opacity-30' : ''}`}>{task.title}</h4><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark opacity-0 group-hover:opacity-100 transition-opacity p-1"><FontAwesomeIcon icon={faEllipsisV} /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
+                                            <div className="flex flex-wrap gap-2 mb-6"><span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-widest ${PRIORITY_CONFIG[task.priority]?.bg} ${PRIORITY_CONFIG[task.priority]?.color}`}>{PRIORITY_CONFIG[task.priority]?.label}</span><span className="text-[10px] font-bold text-enterprise-muted/60 bg-enterprise-light px-2 py-1 rounded border uppercase tracking-widest">{getModuleName(task.module_id)}</span></div>
+                                            <div className="flex items-center justify-between pt-4 border-t border-enterprise-light">{task.deadline ? <div className="flex items-center gap-2 text-[10px] font-bold text-enterprise-muted uppercase tracking-widest"><FontAwesomeIcon icon={faCalendar} className="text-enterprise-muted/40" /> {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div> : <div />} {task.users && <div className="w-8 h-8 rounded bg-enterprise-dark flex items-center justify-center text-xs text-white font-bold shadow-sm">{task.users.name.charAt(0)}</div>}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -352,11 +336,11 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
             {viewMode === 'list' && (
                 <div className="divide-y divide-enterprise-muted/10">
                     {filteredTasks.map(task => (
-                        <div key={task.id} className="flex items-center gap-4 px-6 py-3 hover:bg-enterprise-light/30 transition-all group relative text-xs">
-                            <input type="checkbox" checked={selectedTasks.has(task.id)} onChange={() => toggleTaskSelection(task.id)} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark" />
-                            <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-xs ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/20'}`} />
-                            <span className={`flex-1 font-bold ${task.status === 'done' ? 'line-through text-enterprise-muted/30' : 'text-enterprise-dark'}`}>{task.title}</span>
-                            <div className="flex items-center gap-4">{task.users && <div className="w-6 h-6 rounded-full bg-enterprise-dark flex items-center justify-center text-[8px] text-white font-bold">{task.users.name.charAt(0)}</div>}<span className={`text-[8px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${STATUS_CONFIG[task.status]?.color}`}>{STATUS_CONFIG[task.status]?.label}</span><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark p-1 rounded hover:bg-enterprise-light transition-all opacity-0 group-hover:opacity-100"><FontAwesomeIcon icon={faEllipsisV} size="xs" /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
+                        <div key={task.id} className="flex items-center gap-6 px-10 py-5 hover:bg-enterprise-light/20 transition-all group relative">
+                            <input type="checkbox" checked={selectedTasks.has(task.id)} onChange={() => toggleTaskSelection(task.id)} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-5 h-5" />
+                            <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-base ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/20'}`} />
+                            <span className={`flex-1 font-bold text-base tracking-tight ${task.status === 'done' ? 'line-through text-enterprise-muted/30' : 'text-enterprise-dark'}`}>{task.title}</span>
+                            <div className="flex items-center gap-10">{task.users && <div className="w-9 h-9 rounded bg-enterprise-dark flex items-center justify-center text-sm text-white font-bold shadow-md">{task.users.name.charAt(0)}</div>}<span className={`text-[10px] font-black px-4 py-2 rounded-md border uppercase tracking-[0.2em] shadow-sm ${STATUS_CONFIG[task.status]?.color}`}>{STATUS_CONFIG[task.status]?.label}</span><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark p-2 rounded hover:bg-enterprise-light transition-all opacity-0 group-hover:opacity-100"><FontAwesomeIcon icon={faEllipsisV} /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
                         </div>
                     ))}
                 </div>
