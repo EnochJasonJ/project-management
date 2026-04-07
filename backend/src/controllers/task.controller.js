@@ -85,7 +85,14 @@ export const updateTask = async (req, res) => {
             .from("tasks")
             .update(updateData)
             .eq("id", id)
-            .select("*")
+            .select(`
+                *,
+                users:assigned_to (
+                    id,
+                    name,
+                    email
+                )
+            `)
             .single();
 
         if (error) return res.status(500).json({ error: error.message });

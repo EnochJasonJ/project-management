@@ -162,14 +162,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                 body: JSON.stringify(taskData)
             })
             if (response.ok) {
-                // To show name correctly, we need to find the user in workspaceMembers
                 const updated = await response.json()
-                if (updated.assigned_to) {
-                   const user = workspaceMembers.find(m => m.id === updated.assigned_to)
-                   updated.users = user ? { id: user.id, name: user.name, email: user.email } : null
-                } else {
-                   updated.users = null
-                }
                 setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
                 setTaskToEdit(null)
             }
@@ -205,6 +198,13 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
         if (!window.confirm(`Are you sure you want to delete ${selectedTasks.size} task(s)?`)) return
         for (const taskId of selectedTasks) {
             await handleDeleteTask(taskId, true)
+        }
+        setSelectedTasks(new Set())
+    }
+
+    const handleBulkMarkAsDone = async () => {
+        for (const taskId of selectedTasks) {
+            await updateTaskStatus(taskId, 'done')
         }
         setSelectedTasks(new Set())
     }
@@ -388,7 +388,10 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                         {selectedTasks.size} task{selectedTasks.size > 1 ? 's' : ''} selected
                     </span>
                     <div className="flex items-center gap-2">
-                        <button className="text-xs text-indigo-600 hover:text-indigo-800">Mark as Done</button>
+                        <button 
+                            className="text-xs text-indigo-600 hover:text-indigo-800"
+                            onClick={handleBulkMarkAsDone}
+                        >Mark as Done</button>
                         <button 
                             className="text-xs text-red-600 hover:text-red-800"
                             onClick={handleBulkDeleteTasks}
