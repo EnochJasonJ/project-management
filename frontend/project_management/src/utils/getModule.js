@@ -3,7 +3,7 @@ import axios from "axios";
 const fetchModules = async(project_id, workspace_id) => {
     if(!project_id || !workspace_id) return;
     const token = localStorage.getItem("token");
-    const URL = `http://localhost:3000/api/modules/${project_id}?workspace_id=${workspace_id}`
+    const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/modules/${project_id}?workspace_id=${workspace_id}`
     try {
         const response = await axios.get(URL, {
             headers: {

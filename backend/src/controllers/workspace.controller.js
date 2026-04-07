@@ -84,3 +84,36 @@ export const deleteWorkspace = async(req,res) => {
         console.error(error.message);
     }
 }
+
+export const getWorkspaceMembers = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { data, error } = await supabase
+            .from("workspace_members")
+            .select(`
+                user_id,
+                role,
+                users (
+                    id,
+                    name,
+                    email
+                )
+            `)
+            .eq("workspace_id", id);
+
+        if (error) {
+            return res.status(500).json({ error: error.message });
+        }
+
+        const members = data.map(item => ({
+            id: item.users.id,
+            name: item.users.name,
+            email: item.users.email,
+            role: item.role
+        }));
+
+        res.json(members);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

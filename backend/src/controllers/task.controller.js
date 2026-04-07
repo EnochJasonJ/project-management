@@ -8,8 +8,10 @@ export const createTask = async (req, res) => {
             title,
             description,
             module_id,
-            workspace_id,
-            assigned_to
+            assigned_to,
+            priority,
+            deadline,
+            status
         } = req.body;
         const {data, error} = await supabase
         .from("tasks")
@@ -17,8 +19,10 @@ export const createTask = async (req, res) => {
             title,
             description,
             module_id,
-            workspace_id,
-            assigned_to
+            assigned_to,
+            priority: priority || 'medium',
+            deadline: deadline || null,
+            status: status || 'todo'
         }])
         .select("*")
         .single();
@@ -37,7 +41,14 @@ export const getTasks = async (req,res) => {
         const {module_id} = req.params;
         const {data, error} = await supabase
         .from("tasks")
-        .select("*")
+        .select(`
+            *,
+            users:assigned_to (
+                id,
+                name,
+                email
+            )
+        `)
         .eq("module_id", module_id);
         if(error) return res.status(500).json({error: error.message});
         res.json(data);
@@ -81,6 +92,24 @@ export const updateTask = async (req, res) => {
         if (!data) return res.status(404).json({ error: "Task not found" });
 
         res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// DELETE TASK
+
+export const deleteTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { data, error } = await supabase
+            .from("tasks")
+            .delete()
+            .eq("id", id)
+            .select("*")
+            .single();
+        if (error) return res.status(500).json({ error: error.message });
+        res.json({ message: "Task deleted successfully", data });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

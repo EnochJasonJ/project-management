@@ -27,40 +27,18 @@ export const requireProjectRole = (roles = []) => {
                     req.workspaceRole = role;
                     return next();
                 }
-            }
+                
+                if (roles.includes(role)) {
+                    req.workspaceRole = role;
+                    return next();
+                }
 
-            const {data: projectMember} = await supabase
-            .from("project_members")
-            .select("role")
-            .eq("project_id",projectId)
-            .eq("user_id", userId)
-            .limit(1);
-
-            if(!projectMember || projectMember.length === 0) return res.status(403).json({message: "Not part of project"});
-
-            const userRole = projectMember[0].role;
-
-            if(!roles.includes(userRole)){
                 return res.status(403).json({
-                    message: "Insufficient project permissions"
+                    message: "Insufficient workspace permissions for this project"
                 });
             }
-            req.projectRole = userRole;
-            next();
 
-
-            // const {data, error} = await supabase.from("project_members")
-            // .select("*")
-            // .eq("project_id",projectId)
-            // .eq("user_id",userId)
-            // .limit(1);
-            // if(error || !data || data.length === 0) return res.status(403).json({message: "Not part of the project"});
-            // // const userRole = data[0].role;
-            // if(!roles.includes(userRole)) return res.status(403).json({
-            //     message: "Insufficient project permissions"
-            // });
-            // req.projectMember = data[0];
-            // next();
+            return res.status(403).json({message: "Not part of the workspace"});
         } catch (error) {
             console.error(error.message);
             res.status(500).json({error: error.message});

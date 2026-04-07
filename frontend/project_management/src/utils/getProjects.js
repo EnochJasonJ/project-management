@@ -4,7 +4,7 @@ import { useState } from "react";
 const token = localStorage.getItem("token");
 const userId = localStorage.getItem("userId");
 const getWorkspacedetails = async () => {
-    const URL = "http://localhost:3000/api/workspaces";
+    const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`;
     try {
         const response = await axios.get(URL,{
             headers: {
@@ -23,7 +23,7 @@ const getWorkspacedetails = async () => {
 const getProjects = async () => {
     const workspaceId = await getWorkspacedetails();
     // console.log(workspaceId)
-    const URL = `http://localhost:3000/api/projects?workspace_id=${workspaceId}`;
+    const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${workspaceId}`;
     try {
         const response = await axios.get(URL,{
             headers: {

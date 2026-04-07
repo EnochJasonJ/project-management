@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faCalendar, faFlag, faUser, faAlignLeft } from '@fortawesome/free-solid-svg-icons'
 
-function CreateTaskModal({ modules, onCreateTask, onClose }) {
+function CreateTaskModal({ modules, workspaceMembers, onCreateTask, onClose }) {
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [moduleId, setModuleId] = useState('')
@@ -126,9 +126,9 @@ function CreateTaskModal({ modules, onCreateTask, onClose }) {
                                 onChange={(e) => setPriority(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                             >
-                                <option value="low">🟢 Low</option>
-                                <option value="medium">🟡 Medium</option>
-                                <option value="high">🔴 High</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
                             </select>
                         </div>
 
@@ -153,13 +153,18 @@ function CreateTaskModal({ modules, onCreateTask, onClose }) {
                             <FontAwesomeIcon icon={faUser} className="mr-1.5 text-gray-400" />
                             Assignee (optional)
                         </label>
-                        <input
-                            type="text"
+                        <select
                             value={assignedTo}
                             onChange={(e) => setAssignedTo(e.target.value)}
-                            placeholder="Enter assignee name"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                        />
+                        >
+                            <option value="">Unassigned</option>
+                            {workspaceMembers && workspaceMembers.map((member) => (
+                                <option key={member.id} value={member.id}>
+                                    {member.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* Actions */}

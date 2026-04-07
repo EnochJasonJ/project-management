@@ -23,7 +23,7 @@ const PRIORITY_CONFIG = {
     'low': { label: 'Low', color: 'text-green-600', bg: 'bg-green-50', icon: '🟢' }
 }
 
-function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspace, onCreateTask, onEditTask }) {
+function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspace, workspaceMembers, onCreateTask, onEditTask }) {
     const [viewMode, setViewMode] = useState('table') // 'table', 'board', 'list'
     const [searchQuery, setSearchQuery] = useState('')
     const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' })
@@ -90,7 +90,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const updateTaskStatus = async (taskId, newStatus) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const updateTaskPriority = async (taskId, newPriority) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const handleEditTask = async (taskId, taskData) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -162,13 +162,51 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                 body: JSON.stringify(taskData)
             })
             if (response.ok) {
+                // To show name correctly, we need to find the user in workspaceMembers
                 const updated = await response.json()
+                if (updated.assigned_to) {
+                   const user = workspaceMembers.find(m => m.id === updated.assigned_to)
+                   updated.users = user ? { id: user.id, name: user.name, email: user.email } : null
+                } else {
+                   updated.users = null
+                }
                 setTasks(prev => prev.map(t => t.id === taskId ? updated : t))
                 setTaskToEdit(null)
             }
         } catch (error) {
             console.error('Failed to update task:', error)
         }
+    }
+
+    const handleDeleteTask = async (taskId, skipConfirm = false) => {
+        if (!skipConfirm && !window.confirm('Are you sure you want to delete this task?')) return
+        const token = localStorage.getItem('token')
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            if (response.ok) {
+                setTasks(prev => prev.filter(t => t.id !== taskId))
+                setSelectedTasks(prev => {
+                    const newSet = new Set(prev)
+                    newSet.delete(taskId)
+                    return newSet
+                })
+            }
+        } catch (error) {
+            console.error('Failed to delete task:', error)
+        }
+    }
+
+    const handleBulkDeleteTasks = async () => {
+        if (!window.confirm(`Are you sure you want to delete ${selectedTasks.size} task(s)?`)) return
+        for (const taskId of selectedTasks) {
+            await handleDeleteTask(taskId, true)
+        }
+        setSelectedTasks(new Set())
     }
 
     // Close actions menu when clicking elsewhere
@@ -185,6 +223,33 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
         if (sortConfig.key !== columnKey) return faSort
         return sortConfig.direction === 'asc' ? faSortUp : faSortDown
     }
+
+    const renderActionsMenu = (task) => (
+        <div className="absolute right-0 top-8 z-30 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-40">
+            <button
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setTaskToEdit(task)
+                    setShowActionsMenu(null)
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+                <FontAwesomeIcon icon={faPen} size="xs" className="text-gray-400" />
+                Edit Task
+            </button>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTask(task.id);
+                    setShowActionsMenu(null);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            >
+                <FontAwesomeIcon icon={faClock} size="xs" className="text-red-400" />
+                Delete Task
+            </button>
+        </div>
+    )
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -324,7 +389,10 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                     </span>
                     <div className="flex items-center gap-2">
                         <button className="text-xs text-indigo-600 hover:text-indigo-800">Mark as Done</button>
-                        <button className="text-xs text-red-600 hover:text-red-800">Delete</button>
+                        <button 
+                            className="text-xs text-red-600 hover:text-red-800"
+                            onClick={handleBulkDeleteTasks}
+                        >Delete</button>
                     </div>
                 </div>
             )}
@@ -494,12 +562,12 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                                         </span>
                                     </td>
                                     <td className="px-4 py-2">
-                                        {task.assigned_to ? (
+                                        {task.users ? (
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-xs text-white font-medium">
-                                                    {task.assigned_to?.charAt(0).toUpperCase()}
+                                                    {task.users.name.charAt(0).toUpperCase()}
                                                 </div>
-                                                <span className="text-xs text-gray-600">{task.assigned_to}</span>
+                                                <span className="text-xs text-gray-600">{task.users.name}</span>
                                             </div>
                                         ) : (
                                             <span className="text-xs text-gray-400">Unassigned</span>
@@ -532,30 +600,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                                         >
                                             <FontAwesomeIcon icon={faEllipsisV} size="xs" className="text-gray-400" />
                                         </button>
-                                        {showActionsMenu === task.id && (
-                                            <div className="absolute right-0 top-8 z-30 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-40">
-                                                <button
-                                                    onClick={() => {
-                                                        setTaskToEdit(task)
-                                                        setShowActionsMenu(null)
-                                                    }}
-                                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                                                >
-                                                    <FontAwesomeIcon icon={faPen} size="xs" className="text-gray-400" />
-                                                    Edit Task
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        // Delete functionality - TODO
-                                                        setShowActionsMenu(null)
-                                                    }}
-                                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                                                >
-                                                    <FontAwesomeIcon icon={faClock} size="xs" className="text-red-400" />
-                                                    Delete Task
-                                                </button>
-                                            </div>
-                                        )}
+                                        {showActionsMenu === task.id && renderActionsMenu(task)}
                                     </td>
                                 </tr>
                             ))}
@@ -602,13 +647,20 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                                     {statusTasks.map(task => (
                                         <div
                                             key={task.id}
-                                            className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                                            className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer relative"
                                         >
                                             <div className="flex items-start justify-between mb-2">
                                                 <h4 className="text-sm font-medium text-gray-900 flex-1">{task.title}</h4>
-                                                <button className="text-gray-400 hover:text-gray-600">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setShowActionsMenu(showActionsMenu === task.id ? null : task.id)
+                                                    }}
+                                                    className="text-gray-400 hover:text-gray-600"
+                                                >
                                                     <FontAwesomeIcon icon={faEllipsisV} size="xs" />
                                                 </button>
+                                                {showActionsMenu === task.id && renderActionsMenu(task)}
                                             </div>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className={`text-xs px-1.5 py-0.5 rounded ${
@@ -628,6 +680,14 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                                                     {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                                 </div>
                                             )}
+                                            {task.users && (
+                                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+                                                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-[10px] text-white font-medium">
+                                                        {task.users.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-600">{task.users.name}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -643,7 +703,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                     {filteredTasks.map(task => (
                         <div
                             key={task.id}
-                            className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors relative"
                         >
                             <input
                                 type="checkbox"
@@ -662,17 +722,35 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                             }`}>
                                 {task.title}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                                STATUS_CONFIG[task.status]?.color || 'bg-gray-100 text-gray-700'
-                            }`}>
-                                {STATUS_CONFIG[task.status]?.label}
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                                PRIORITY_CONFIG[task.priority]?.bg || 'bg-gray-100'
-                            } ${PRIORITY_CONFIG[task.priority]?.color || 'text-gray-600'}`}>
-                                {PRIORITY_CONFIG[task.priority]?.icon} {task.priority}
-                            </span>
-                            <FontAwesomeIcon icon={faEllipsisV} size="xs" className="text-gray-400 cursor-pointer hover:text-gray-600" />
+                            <div className="flex items-center gap-3">
+                                {task.users && (
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-[10px] text-white font-medium" title={task.users.name}>
+                                            {task.users.name.charAt(0).toUpperCase()}
+                                        </div>
+                                    </div>
+                                )}
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                    STATUS_CONFIG[task.status]?.color || 'bg-gray-100 text-gray-700'
+                                }`}>
+                                    {STATUS_CONFIG[task.status]?.label}
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                    PRIORITY_CONFIG[task.priority]?.bg || 'bg-gray-100'
+                                } ${PRIORITY_CONFIG[task.priority]?.color || 'text-gray-600'}`}>
+                                    {PRIORITY_CONFIG[task.priority]?.icon} {task.priority}
+                                </span>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setShowActionsMenu(showActionsMenu === task.id ? null : task.id)
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 p-1"
+                                >
+                                    <FontAwesomeIcon icon={faEllipsisV} size="xs" />
+                                </button>
+                                {showActionsMenu === task.id && renderActionsMenu(task)}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -683,6 +761,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                 <EditTaskModal
                     task={taskToEdit}
                     modules={modules}
+                    workspaceMembers={workspaceMembers}
                     onEditTask={handleEditTask}
                     onClose={() => setTaskToEdit(null)}
                 />

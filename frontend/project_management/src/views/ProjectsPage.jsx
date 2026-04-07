@@ -6,7 +6,7 @@ import getWorkspace from '../utils/getWorkspace'
 
 function ProjectsPage() {
   const token = localStorage.getItem("token")
-  const URL = "http://localhost:3000/api/projects"
+  const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects`
   const [projects, setProjects] = useState([])
   const [selectedProject, setSelectedProject] = useState(null)
   const [workspaces, setWorkspaces] = useState([])
@@ -14,6 +14,7 @@ function ProjectsPage() {
   const [selectedModule, setSelectedModule] = useState(null)
   const [modules, setModules] = useState([])
   const [tasks, setTasks] = useState([])
+  const [workspaceMembers, setWorkspaceMembers] = useState([])
 
   const createProject = async (project) => {
     try {
@@ -32,7 +33,7 @@ function ProjectsPage() {
 
   const createWorkspace = async (workspace) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/workspaces/", workspace, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/`, workspace, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -51,7 +52,7 @@ function ProjectsPage() {
         console.error("NO TOKEN!")
         return
       }
-      const response = await axios.post("http://localhost:3000/api/modules", module, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/modules`, module, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -66,7 +67,7 @@ function ProjectsPage() {
 
   const createTask = async (task) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/tasks/create", task, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/create`, task, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -82,7 +83,7 @@ function ProjectsPage() {
     if (!selectedWorkspace) return
     try {
       const workspace_id = selectedWorkspace.id
-      await axios.delete(`http://localhost:3000/api/workspaces/${workspace_id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${workspace_id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -105,10 +106,22 @@ function ProjectsPage() {
   }, [])
 
   useEffect(() => {
+    if (!selectedWorkspace) {
+      setWorkspaceMembers([])
+      return
+    }
+    const fetchWorkspaceMembers = async () => {
+      const members = await getWorkspace.getWorkspaceMembers(selectedWorkspace.id)
+      setWorkspaceMembers(members)
+    }
+    fetchWorkspaceMembers()
+  }, [selectedWorkspace])
+
+  useEffect(() => {
     if (!selectedWorkspace) return
     const fetchProjects = async () => {
       const res = await axios.get(
-        `http://localhost:3000/api/projects?workspace_id=${selectedWorkspace.id}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${selectedWorkspace.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setProjects(res.data)
@@ -138,6 +151,7 @@ function ProjectsPage() {
         setTasks={setTasks}
         selectedModule={selectedModule}
         setSelectedModule={setSelectedModule}
+        workspaceMembers={workspaceMembers}
       />
       <ProjectDetails
         selectedProject={selectedProject}
@@ -145,6 +159,7 @@ function ProjectsPage() {
         tasks={tasks}
         setTasks={setTasks}
         selectedWorkspace={selectedWorkspace}
+        workspaceMembers={workspaceMembers}
         createTask={createTask}
         onCreateModule={() => {
           // Trigger module creation from sidebar

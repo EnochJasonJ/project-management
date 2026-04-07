@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const token = localStorage.getItem("token");
-const URL = "http://localhost:3000/api/workspaces";
+const URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/workspaces` : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`;
+
 const getWorkspacedetails = async () => {
     try {
         const response = await axios.get(URL,{
@@ -9,9 +10,7 @@ const getWorkspacedetails = async () => {
                 'Authorization': `Bearer ${token}`
             }
         });
-        // console.log(response.data);
-        const workspaceId = response.data[0].id;
-        console.log(workspaceId)
+        const workspaceId = response.data[0]?.id;
         return workspaceId;
     } catch (error) {
         console.error(error);
@@ -25,11 +24,24 @@ const getWorkspaces = async () => {
                 'Authorization': `Bearer ${token}`
             }
         });
-        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error(error);
     }
 }
 
-export default {getWorkspacedetails , getWorkspaces};
+const getWorkspaceMembers = async (workspaceId) => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${workspaceId}/members`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export default {getWorkspacedetails , getWorkspaces, getWorkspaceMembers};

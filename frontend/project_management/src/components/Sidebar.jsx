@@ -31,6 +31,7 @@ function Sidebar({
   setModules,
   tasks,
   setTasks,
+  workspaceMembers,
 }) {
   const [collapsed, setCollapsed] = useState(false)
   const [showProjectModal, setShowProjectModal] = useState(false)
@@ -94,10 +95,11 @@ function Sidebar({
 
       {showTaskModal && (
         <CreateTaskModal
-        createTask={createTask}
-        selectedWorkspace={selectedWorkspace}
-        selectedModule={selectedModule}
-        onClose={() => setShowTaskModal(false)}
+          createTask={createTask}
+          selectedWorkspace={selectedWorkspace}
+          selectedModule={selectedModule}
+          workspaceMembers={workspaceMembers}
+          onClose={() => setShowTaskModal(false)}
         />
       )}
 

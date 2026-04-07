@@ -10,6 +10,7 @@ function ProjectDetails({
   tasks,
   setTasks,
   selectedWorkspace,
+  workspaceMembers,
   createTask,
   onCreateModule
 }) {
@@ -40,6 +41,7 @@ function ProjectDetails({
       {showTaskModal && (
         <CreateTaskModal
           modules={modules}
+          workspaceMembers={workspaceMembers}
           onCreateTask={(taskData) => {
             createTask(taskData)
             setShowTaskModal(false)
@@ -210,6 +212,7 @@ function ProjectDetails({
           modules={modules}
           selectedProject={selectedProject}
           selectedWorkspace={selectedWorkspace}
+          workspaceMembers={workspaceMembers}
           onCreateTask={() => setShowTaskModal(true)}
         />
       )}
