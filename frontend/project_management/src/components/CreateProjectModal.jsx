@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFolderPlus, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPlus, faAlignLeft } from '@fortawesome/free-solid-svg-icons'
 
 function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
   const [name, setName] = useState("")
@@ -9,17 +9,14 @@ function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name.trim()) return
-
+    if (!name.trim() || !selectedWorkspace) return
     setIsSubmitting(true)
     try {
       await createProject({
-        workspace_id: selectedWorkspace.id,
         name,
-        description
+        description,
+        workspace_id: selectedWorkspace.id
       })
-      setName("")
-      setDescription("")
       onClose()
     } catch (error) {
       console.error(error)
@@ -29,71 +26,42 @@ function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 w-full max-w-md p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
-              <FontAwesomeIcon icon={faFolderPlus} className="text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Create Project</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
-          >
-            <FontAwesomeIcon icon={faTimes} className="text-gray-400" />
-          </button>
+    <div className="fixed inset-0 bg-enterprise-dark/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden border border-enterprise-muted/20 animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-enterprise-muted/10 bg-enterprise-light/50">
+          <h2 className="text-sm font-bold text-enterprise-dark uppercase tracking-widest">Initialize New Project</h2>
+          <button onClick={onClose} className="text-enterprise-muted hover:text-enterprise-dark transition-colors"><FontAwesomeIcon icon={faXmark} /></button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Project Name
-            </label>
-            <input
-              type="text"
-              placeholder="My awesome project"
+            <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5 px-1">Project Descriptor</label>
+            <input 
+              type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all placeholder-gray-400"
+              placeholder="System name..." 
+              className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none transition-all font-semibold text-enterprise-dark"
               required
+              autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              placeholder="Add a description..."
+            <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5 px-1">Objective Summary</label>
+            <textarea 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full px-4 py-3 bg-white/80 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all resize-none placeholder-gray-400"
+              placeholder="High-level project goals..." 
+              rows={3}
+              className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none transition-all font-medium resize-none text-enterprise-dark"
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !name.trim()}
-              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-200 hover:shadow-xl hover:shadow-pink-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              {isSubmitting ? "Creating..." : "Create"}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 py-2 px-4 border border-enterprise-muted/30 text-enterprise-muted font-bold uppercase text-[10px] tracking-widest rounded hover:bg-enterprise-light transition-all">Abort</button>
+            <button type="submit" disabled={isSubmitting || !name.trim()} className="flex-1 py-2 px-4 bg-enterprise-dark text-white font-bold uppercase text-[10px] tracking-widest rounded hover:bg-enterprise-accent shadow-md disabled:opacity-50">
+              {isSubmitting ? 'Processing...' : 'Confirm Initiation'}
             </button>
           </div>
         </form>
