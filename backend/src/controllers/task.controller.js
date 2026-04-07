@@ -8,6 +8,7 @@ export const createTask = async (req, res) => {
             title,
             description,
             module_id,
+            workspace_id,
             assigned_to,
             priority,
             deadline,
@@ -19,6 +20,7 @@ export const createTask = async (req, res) => {
             title,
             description,
             module_id,
+            workspace_id,
             assigned_to,
             priority: priority || 'medium',
             deadline: deadline || null,
@@ -66,6 +68,7 @@ export const updateTask = async (req, res) => {
             title,
             description,
             module_id,
+            workspace_id,
             assigned_to,
             status,
             priority,
@@ -76,6 +79,7 @@ export const updateTask = async (req, res) => {
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (module_id !== undefined) updateData.module_id = module_id;
+        if (workspace_id !== undefined) updateData.workspace_id = workspace_id;
         if (assigned_to !== undefined) updateData.assigned_to = assigned_to;
         if (status !== undefined) updateData.status = status;
         if (priority !== undefined) updateData.priority = priority;

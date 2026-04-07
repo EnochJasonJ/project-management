@@ -25,6 +25,16 @@ function ProjectsPage() {
     } catch (error) { console.error(error) }
   }
 
+  const updateProject = async (projectId, projectData) => {
+    try {
+      const response = await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects/${projectId}`, projectData, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setProjects(projects.map(p => p.id === projectId ? response.data : p))
+      if (selectedProject?.id === projectId) setSelectedProject(response.data)
+    } catch (error) { console.error(error) }
+  }
+
   const createWorkspace = async (workspace) => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`, workspace, {
@@ -124,6 +134,7 @@ function ProjectsPage() {
       />
       <ProjectDetails
         selectedProject={selectedProject}
+        onUpdateProject={updateProject}
         modules={modules}
         tasks={tasks}
         setTasks={setTasks}

@@ -6,6 +6,7 @@ import CreateTaskModal from './CreateTaskModal'
 
 function ProjectDetails({
   selectedProject,
+  onUpdateProject,
   modules,
   tasks,
   setTasks,
@@ -15,6 +16,7 @@ function ProjectDetails({
   onCreateModule
 }) {
   const [showTaskModal, setShowTaskModal] = useState(false)
+  const [isEditingPriority, setIsEditingPriority] = useState(false)
 
   if (!selectedProject) {
     return (
@@ -34,12 +36,19 @@ function ProjectDetails({
   const completedTasks = tasks.filter(t => t.status === 'done').length
   const inProgressTasks = tasks.filter(t => t.status === 'in progress').length
 
+  const handlePriorityChange = async (newPriority) => {
+    await onUpdateProject(selectedProject.id, { priority: newPriority })
+    setIsEditingPriority(false)
+  }
+
   return (
     <div className="ml-64 flex-1 min-h-screen bg-enterprise-light p-8 overflow-y-auto">
       {showTaskModal && (
         <CreateTaskModal
           modules={modules}
           workspaceMembers={workspaceMembers}
+          workspaceId={selectedWorkspace.id}
+          defaultPriority={selectedProject.priority}
           onCreateTask={(taskData) => {
             createTask(taskData)
             setShowTaskModal(false)
@@ -79,11 +88,28 @@ function ProjectDetails({
         <div className="flex items-center gap-6 border-t border-enterprise-muted/10 pt-4">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-enterprise-muted uppercase tracking-wider">Priority</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-              selectedProject.priority === 'high' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-enterprise-light text-enterprise-dark border border-enterprise-muted/20'
-            }`}>
-              {selectedProject.priority.toUpperCase()}
-            </span>
+            {isEditingPriority ? (
+              <select
+                value={selectedProject.priority}
+                onChange={(e) => handlePriorityChange(e.target.value)}
+                onBlur={() => setIsEditingPriority(false)}
+                autoFocus
+                className="text-[10px] font-bold uppercase border border-enterprise-muted/30 rounded px-1 py-0.5 outline-none focus:ring-1 focus:ring-enterprise-dark bg-white"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            ) : (
+              <button 
+                onClick={() => setIsEditingPriority(true)}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded transition-all hover:scale-105 ${
+                  selectedProject.priority === 'high' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-enterprise-light text-enterprise-dark border border-enterprise-muted/20'
+                }`}
+              >
+                {selectedProject.priority.toUpperCase()}
+              </button>
+            )}
           </div>
           
           {selectedProject.due_date && (
