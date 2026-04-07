@@ -35,7 +35,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
     const fetchComments = async () => {
         try {
             const token = localStorage.getItem("token")
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/comments/${task.id}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/comments/${task.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             setComments(res.data)
@@ -48,7 +48,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
         setIsPostingComment(true)
         try {
             const token = localStorage.getItem("token")
-            const res = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/comments`, {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/comments`, {
                 task_id: task.id,
                 content: newComment
             }, {
@@ -66,7 +66,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
     const handleDeleteComment = async (commentId) => {
         try {
             const token = localStorage.getItem("token")
-            await axios.delete(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/comments/${commentId}`, {
+            await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/comments/${commentId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             setComments(comments.filter(c => c.id !== commentId))

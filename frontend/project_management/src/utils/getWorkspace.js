@@ -2,7 +2,7 @@ import axios from "axios";
 
 const getWorkspacedetails = async () => {
     const token = localStorage.getItem("token");
-    const URL = `${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces`;
+    const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`;
     try {
         const response = await axios.get(URL,{
             headers: {
@@ -18,7 +18,7 @@ const getWorkspacedetails = async () => {
 
 const getWorkspaces = async () => {
     const token = localStorage.getItem("token");
-    const URL = `${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces`;
+    const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`;
     try {
         const response = await axios.get(URL,{
             headers: {
@@ -34,7 +34,7 @@ const getWorkspaces = async () => {
 const getWorkspaceMembers = async (workspaceId) => {
     const token = localStorage.getItem("token");
     try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces/${workspaceId}/members`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${workspaceId}/members`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

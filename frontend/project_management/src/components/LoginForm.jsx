@@ -13,7 +13,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
-  const URL = `${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/auth/login`
+  const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/login`
 
   const LoginUser = async () => {
     if (!email || !password) return

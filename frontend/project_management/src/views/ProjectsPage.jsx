@@ -28,7 +28,7 @@ function ProjectsPage() {
 
   const createProject = async (project) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/projects`, project, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects`, project, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setProjects([...projects, response.data])
@@ -41,7 +41,7 @@ function ProjectsPage() {
 
   const updateProject = async (projectId, projectData) => {
     try {
-      const response = await axios.patch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/projects/${projectId}`, projectData, {
+      const response = await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects/${projectId}`, projectData, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setProjects(projects.map(p => p.id === projectId ? response.data : p))
@@ -55,7 +55,7 @@ function ProjectsPage() {
 
   const createWorkspace = async (workspace) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces`, workspace, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`, workspace, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setWorkspaces([...workspaces, response.data])
@@ -70,7 +70,7 @@ function ProjectsPage() {
     if (!selectedWorkspace) return
     if (!window.confirm("Are you sure you want to delete this workspace?")) return
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces/${selectedWorkspace.id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${selectedWorkspace.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       toast.success('Workspace purged from registry')
@@ -84,7 +84,7 @@ function ProjectsPage() {
 
   const createModule = async (module) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/modules`, module, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/modules`, module, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setModules([...modules, response.data])
@@ -97,7 +97,7 @@ function ProjectsPage() {
 
   const createTask = async (taskData) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/create`, taskData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/create`, taskData, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setTasks([...tasks, response.data])
@@ -132,7 +132,7 @@ function ProjectsPage() {
     if (!selectedWorkspace || !token) return
     const fetchProjects = async () => {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/projects?workspace_id=${selectedWorkspace.id}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${selectedWorkspace.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setProjects(res.data)
