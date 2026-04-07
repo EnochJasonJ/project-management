@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Sidebar from '../components/Sidebar'
 import ProjectDetails from '../components/ProjectDetails'
 import axios from 'axios'
 import getWorkspace from '../utils/getWorkspace'
 import { toast } from 'react-hot-toast'
+import { supabase } from '../utils/supabaseClient'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState([])
@@ -14,8 +15,48 @@ function ProjectsPage() {
   const [modules, setModules] = useState([])
   const [tasks, setTasks] = useState([])
   const [workspaceMembers, setWorkspaceMembers] = useState([])
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const token = localStorage.getItem("token")
+
+  const fetchWorkspaceMembers = useCallback(async () => {
+    if (!selectedWorkspace) {
+      setWorkspaceMembers([])
+      return
+    }
+    const members = await getWorkspace.getWorkspaceMembers(selectedWorkspace.id)
+    setWorkspaceMembers(members)
+  }, [selectedWorkspace])
+
+  useEffect(() => {
+    const handleOAuthRedirect = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session && !localStorage.getItem("token")) {
+        setIsSyncing(true)
+        try {
+          const user = session.user
+          const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/oauth-sync`, {
+            email: user.email,
+            name: user.user_metadata.full_name || user.email.split('@')[0]
+          })
+          
+          localStorage.setItem("token", response.data.token)
+          localStorage.setItem("userName", response.data.userName)
+          localStorage.setItem("emailId", response.data.emailId)
+          localStorage.setItem("userId", response.data.userId)
+          
+          toast.success('Social authentication verified')
+          window.location.reload()
+        } catch (error) {
+          console.error(error)
+          toast.error('Failed to synchronize social account')
+        } finally {
+          setIsSyncing(false)
+        }
+      }
+    }
+    handleOAuthRedirect()
+  }, [])
 
   const createProject = async (project) => {
     try {
@@ -100,28 +141,28 @@ function ProjectsPage() {
   }
 
   useEffect(() => {
+    if (isSyncing) return
     const fetchWorkspaces = async () => {
       const res = await getWorkspace.getWorkspaces()
       setWorkspaces(res || [])
       if (res && res.length > 0 && !selectedWorkspace) setSelectedWorkspace(res[0])
     }
     if (token) fetchWorkspaces()
-  }, [token])
+  }, [token, isSyncing])
 
   useEffect(() => {
-    if (!selectedWorkspace) {
-      setWorkspaceMembers([])
-      return
-    }
-    const fetchWorkspaceMembers = async () => {
-      const members = await getWorkspace.getWorkspaceMembers(selectedWorkspace.id)
-      setWorkspaceMembers(members)
-    }
     fetchWorkspaceMembers()
-  }, [selectedWorkspace])
+  }, [fetchWorkspaceMembers])
+
+  // Listen for member updates
+  useEffect(() => {
+    const handleUpdateMembers = () => fetchWorkspaceMembers()
+    window.addEventListener('workspace-members-updated', handleUpdateMembers)
+    return () => window.removeEventListener('workspace-members-updated', handleUpdateMembers)
+  }, [fetchWorkspaceMembers])
 
   useEffect(() => {
-    if (!selectedWorkspace || !token) return
+    if (!selectedWorkspace || !token || isSyncing) return
     const fetchProjects = async () => {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${selectedWorkspace.id}`,
@@ -131,7 +172,16 @@ function ProjectsPage() {
       if (res.data.length > 0 && !selectedProject) setSelectedProject(res.data[0])
     }
     fetchProjects()
-  }, [selectedWorkspace, token])
+  }, [selectedWorkspace, token, isSyncing])
+
+  if (isSyncing) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-enterprise-light">
+        <div className="w-12 h-12 border-4 border-enterprise-dark border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-bold text-enterprise-dark uppercase tracking-widest">Synchronizing Enterprise Identity...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-row min-h-screen bg-enterprise-light font-sans text-enterprise-dark">

@@ -117,3 +117,40 @@ export const getWorkspaceMembers = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const addMemberToWorkspace = async (req, res) => {
+    try {
+        const { id: workspace_id } = req.params;
+        const { user_id, role } = req.body;
+
+        // Verify requester is owner
+        const { data: workspace } = await supabase
+            .from("workspaces")
+            .select("owner_id")
+            .eq("id", workspace_id)
+            .single();
+
+        if (workspace.owner_id !== req.user.id) {
+            return res.status(403).json({ error: "Only the workspace owner can add members" });
+        }
+
+        const { data, error } = await supabase
+            .from("workspace_members")
+            .insert([{
+                workspace_id,
+                user_id,
+                role: role || 'member'
+            }])
+            .select("*")
+            .single();
+
+        if (error) {
+            if (error.code === '23505') return res.status(400).json({ error: "User is already a member" });
+            return res.status(500).json({ error: error.message });
+        }
+
+        res.status(201).json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

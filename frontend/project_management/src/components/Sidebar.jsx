@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faXmark, faPlus, faSignOutAlt, faTrash, faChevronDown, faFolder, faLayerGroup, faTasks } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faXmark, faPlus, faSignOutAlt, faTrash, faChevronDown, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
 import Avatar from './Avatar'
 import ListProjects from './ListProjects'
@@ -8,6 +8,7 @@ import CreateProjectModal from './CreateProjectModal'
 import CreateWorkspaceModal from './CreateWorkspaceModal'
 import CreateModuleModal from './CreateModuleModal'
 import CreateTaskModal from './CreateTaskModal'
+import AddMemberModal from './AddMemberModal'
 
 
 function Sidebar({
@@ -36,11 +37,15 @@ function Sidebar({
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false)
   const [showModuleModal, setShowModuleModal] = useState(false);
   const [showTaskModal,setShowTaskModal] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showToggle, setShowToggle] = useState(true)
   const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false)
   const navigate = useNavigate()
   const userName = localStorage.getItem("userName")
   const emailId = localStorage.getItem("emailId")
+  const currentUserId = localStorage.getItem("userId")
+
+  const isOwner = selectedWorkspace?.owner_id === currentUserId
 
   const collapse = () => {
     if (!collapsed) {
@@ -92,11 +97,24 @@ function Sidebar({
         <CreateTaskModal
           modules={modules}
           workspaceMembers={workspaceMembers}
+          workspaceId={selectedWorkspace.id}
           onCreateTask={(taskData) => {
             createTask(taskData)
             setShowTaskModal(false)
           }}
           onClose={() => setShowTaskModal(false)}
+        />
+      )}
+
+      {showAddMemberModal && (
+        <AddMemberModal
+          workspace={selectedWorkspace}
+          onClose={() => setShowAddMemberModal(false)}
+          onMemberAdded={() => {
+            // Force refresh of members list by notifying parent
+            const event = new CustomEvent('workspace-members-updated')
+            window.dispatchEvent(event)
+          }}
         />
       )}
 
@@ -128,7 +146,18 @@ function Sidebar({
           {/* Workspace Switcher */}
           <div className="px-4 py-6">
             <div className="relative">
-              <p className="text-xs font-bold text-enterprise-muted uppercase tracking-[0.15em] mb-2 px-1">Workspace Context</p>
+              <div className="flex items-center justify-between mb-2 px-1">
+                <p className="text-xs font-bold text-enterprise-muted uppercase tracking-[0.15em]">Workspace Context</p>
+                {isOwner && (
+                  <button 
+                    onClick={() => setShowAddMemberModal(true)}
+                    className="text-blue-400 hover:text-blue-300 transition-colors"
+                    title="Manage Personnel"
+                  >
+                    <FontAwesomeIcon icon={faUserPlus} className="text-[10px]" />
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => setShowWorkspaceDropdown(!showWorkspaceDropdown)}
                 className="w-full flex items-center justify-between px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-white transition-all"
@@ -201,10 +230,10 @@ function Sidebar({
 
           {/* Sidebar Footer */}
           <div className="p-4 border-t border-white/5 space-y-2">
-            {selectedWorkspace && (
+            {selectedWorkspace && isOwner && (
               <button
                 onClick={deleteWorkspace}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/5 transition-all text-sm font-medium"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/5 transition-all text-sm font-medium"
               >
                 <FontAwesomeIcon icon={faTrash} className="w-4" />
                 <span>Destroy Workspace</span>
@@ -212,7 +241,7 @@ function Sidebar({
             )}
             <button
               onClick={logout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
             >
               <FontAwesomeIcon icon={faSignOutAlt} className="w-4" />
               <span>Exit System</span>

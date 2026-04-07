@@ -104,6 +104,24 @@ export const oauthSync = async (req, res) => {
     }
 };
 
+export const searchUsers = async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.json([]);
+
+        const { data, error } = await supabase
+            .from("users")
+            .select("id, name, email")
+            .ilike("email", `%${query}%`)
+            .limit(5);
+
+        if (error) return res.status(500).json({ error: error.message });
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 
 
