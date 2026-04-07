@@ -1,9 +1,7 @@
 import axios from "axios";
-import { useState } from "react";
 
-const token = localStorage.getItem("token");
-const userId = localStorage.getItem("userId");
 const getWorkspacedetails = async () => {
+    const token = localStorage.getItem("token");
     const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`;
     try {
         const response = await axios.get(URL,{
@@ -11,9 +9,7 @@ const getWorkspacedetails = async () => {
                 'Authorization': `Bearer ${token}`
             }
         });
-        // console.log(response.data);
         const workspaceId = response.data[0].id;
-        // console.log(workspaceId)
         return workspaceId;
     } catch (error) {
         console.error(error);
@@ -21,8 +17,8 @@ const getWorkspacedetails = async () => {
 }
 
 const getProjects = async () => {
+    const token = localStorage.getItem("token");
     const workspaceId = await getWorkspacedetails();
-    // console.log(workspaceId)
     const URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${workspaceId}`;
     try {
         const response = await axios.get(URL,{
@@ -31,7 +27,6 @@ const getProjects = async () => {
                 'Authorization': `Bearer ${token}`
             }
         })
-        // console.log(response.data);
         return response.data;
     } catch (error) {
         console.error(error)
