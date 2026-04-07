@@ -29,7 +29,7 @@ function LoginPage() {
         
         try {
           const user = session.user
-          const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/oauth-sync`, {
+          const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/auth/oauth-sync`, {
             email: user.email,
             name: user.user_metadata.full_name || user.email.split('@')[0]
           })

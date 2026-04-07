@@ -20,10 +20,10 @@ app.use("/api/tasks",TaskRoutes);
 app.use("/api/modules",ModuleRoutes);
 app.use("/api/comments", CommentRoutes);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.get('/',(req,res) => {
-    res.send('Api Running! 🚀');
+    res.send('TaskFlow Enterprise API Running! 🚀');
 });
 
 app.get("/api/test",protect,(req,res) => {

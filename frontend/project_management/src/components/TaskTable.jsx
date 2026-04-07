@@ -70,7 +70,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const updateTaskStatus = async (taskId, newStatus) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ status: newStatus })
@@ -90,7 +90,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const updateTaskPriority = async (taskId, newPriority) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ priority: newPriority })
@@ -110,7 +110,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const updateTaskAssignee = async (taskId, newAssigneeId) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ assigned_to: newAssigneeId || null })
@@ -141,7 +141,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const handleEditTask = async (taskId, taskData) => {
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(taskData)
@@ -162,7 +162,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
         if (!skipConfirm && !window.confirm('Are you sure you want to delete this task?')) return
         const token = localStorage.getItem('token')
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/${taskId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })

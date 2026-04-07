@@ -4,7 +4,6 @@ import ProjectDetails from '../components/ProjectDetails'
 import axios from 'axios'
 import getWorkspace from '../utils/getWorkspace'
 import { toast } from 'react-hot-toast'
-import { supabase } from '../utils/supabaseClient'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState([])
@@ -15,7 +14,6 @@ function ProjectsPage() {
   const [modules, setModules] = useState([])
   const [tasks, setTasks] = useState([])
   const [workspaceMembers, setWorkspaceMembers] = useState([])
-  const [isSyncing, setIsSyncing] = useState(false)
 
   const token = localStorage.getItem("token")
 
@@ -28,39 +26,9 @@ function ProjectsPage() {
     setWorkspaceMembers(members)
   }, [selectedWorkspace])
 
-  useEffect(() => {
-    const handleOAuthRedirect = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session && !localStorage.getItem("token")) {
-        setIsSyncing(true)
-        try {
-          const user = session.user
-          const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/oauth-sync`, {
-            email: user.email,
-            name: user.user_metadata.full_name || user.email.split('@')[0]
-          })
-          
-          localStorage.setItem("token", response.data.token)
-          localStorage.setItem("userName", response.data.userName)
-          localStorage.setItem("emailId", response.data.emailId)
-          localStorage.setItem("userId", response.data.userId)
-          
-          toast.success('Social authentication verified')
-          window.location.reload()
-        } catch (error) {
-          console.error(error)
-          toast.error('Failed to synchronize social account')
-        } finally {
-          setIsSyncing(false)
-        }
-      }
-    }
-    handleOAuthRedirect()
-  }, [])
-
   const createProject = async (project) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects`, project, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/projects`, project, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setProjects([...projects, response.data])
@@ -73,7 +41,7 @@ function ProjectsPage() {
 
   const updateProject = async (projectId, projectData) => {
     try {
-      const response = await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects/${projectId}`, projectData, {
+      const response = await axios.patch(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/projects/${projectId}`, projectData, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setProjects(projects.map(p => p.id === projectId ? response.data : p))
@@ -87,7 +55,7 @@ function ProjectsPage() {
 
   const createWorkspace = async (workspace) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces`, workspace, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces`, workspace, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setWorkspaces([...workspaces, response.data])
@@ -102,7 +70,7 @@ function ProjectsPage() {
     if (!selectedWorkspace) return
     if (!window.confirm("Are you sure you want to delete this workspace?")) return
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${selectedWorkspace.id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces/${selectedWorkspace.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       toast.success('Workspace purged from registry')
@@ -116,7 +84,7 @@ function ProjectsPage() {
 
   const createModule = async (module) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/modules`, module, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/modules`, module, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setModules([...modules, response.data])
@@ -129,7 +97,7 @@ function ProjectsPage() {
 
   const createTask = async (taskData) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/create`, taskData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/tasks/create`, taskData, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setTasks([...tasks, response.data])
@@ -141,14 +109,13 @@ function ProjectsPage() {
   }
 
   useEffect(() => {
-    if (isSyncing) return
     const fetchWorkspaces = async () => {
       const res = await getWorkspace.getWorkspaces()
       setWorkspaces(res || [])
       if (res && res.length > 0 && !selectedWorkspace) setSelectedWorkspace(res[0])
     }
     if (token) fetchWorkspaces()
-  }, [token, isSyncing])
+  }, [token])
 
   useEffect(() => {
     fetchWorkspaceMembers()
@@ -162,26 +129,17 @@ function ProjectsPage() {
   }, [fetchWorkspaceMembers])
 
   useEffect(() => {
-    if (!selectedWorkspace || !token || isSyncing) return
+    if (!selectedWorkspace || !token) return
     const fetchProjects = async () => {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/projects?workspace_id=${selectedWorkspace.id}`,
+        `${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/projects?workspace_id=${selectedWorkspace.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setProjects(res.data)
       if (res.data.length > 0 && !selectedProject) setSelectedProject(res.data[0])
     }
     fetchProjects()
-  }, [selectedWorkspace, token, isSyncing])
-
-  if (isSyncing) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-enterprise-light">
-        <div className="w-12 h-12 border-4 border-enterprise-dark border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-bold text-enterprise-dark uppercase tracking-widest">Synchronizing Enterprise Identity...</p>
-      </div>
-    )
-  }
+  }, [selectedWorkspace, token])
 
   return (
     <div className="flex flex-row min-h-screen bg-enterprise-light font-sans text-enterprise-dark">

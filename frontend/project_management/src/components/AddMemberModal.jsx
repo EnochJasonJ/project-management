@@ -26,7 +26,7 @@ function AddMemberModal({ workspace, onClose, onMemberAdded }) {
         setIsSearching(true)
         try {
             const token = localStorage.getItem("token")
-            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/search-users?query=${query}`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/auth/search-users?query=${query}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             setResults(response.data)
@@ -41,7 +41,7 @@ function AddMemberModal({ workspace, onClose, onMemberAdded }) {
         setIsAdding(true)
         try {
             const token = localStorage.getItem("token")
-            await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/workspaces/${workspace.id}/members`, {
+            await axios.post(`${import.meta.env.VITE_API_URL || 'https://project-management-8lud.onrender.com'}/api/workspaces/${workspace.id}/members`, {
                 user_id: user.id,
                 role: 'member'
             }, {

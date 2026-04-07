@@ -472,7 +472,7 @@ Landing Page (/)
    - Status: UNFIXED
 
 8. **Frontend components**
-   - Issue: API URLs hardcoded as `http://localhost:3000` instead of using environment variables
+   - Issue: API URLs hardcoded as `https://project-management-8lud.onrender.com` instead of using environment variables
    - Status: UNFIXED
 
 ---
@@ -489,7 +489,7 @@ PORT=3000
 
 ### Frontend
 - No environment variables currently configured
-- API URL is hardcoded as `http://localhost:3000`
+- API URL is hardcoded as `https://project-management-8lud.onrender.com`
 
 ---
 
@@ -499,7 +499,7 @@ PORT=3000
 ```bash
 cd backend
 npm install
-npm run dev  # Starts server on http://localhost:3000
+npm run dev  # Starts server on https://project-management-8lud.onrender.com
 ```
 
 ### Frontend

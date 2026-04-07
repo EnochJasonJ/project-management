@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import LoginPage from './views/LoginPage'
 import LandingPage from './views/LandingPage'
@@ -45,6 +45,11 @@ function App() {
             <ProjectsPage />
           </PrivateRoute>
         } />
+        {/* Alias for projects to fix "No routes matched" error */}
+        <Route path="/dashboard" element={<Navigate to="/projects" replace />} />
+        
+        {/* Catch-all: Redirect to landing page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )
