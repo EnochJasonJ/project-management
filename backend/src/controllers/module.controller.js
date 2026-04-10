@@ -22,11 +22,19 @@ export const createModule = async (req,res) => {
 export const getModules = async (req,res) => {
     try {
         const {project_id} = req.params;
+        const { workspace_id } = req.query;
         if(!project_id) return res.status(400).json({message: "project_id required"});
-        const {data, error} = await supabase
-        .from("modules")
-        .select("*")
-        .eq("project_id", project_id);
+        
+        let query = supabase
+            .from("modules")
+            .select("*")
+            .eq("project_id", project_id);
+            
+        if (workspace_id) {
+            query = query.eq("workspace_id", workspace_id);
+        }
+
+        const {data, error} = await query;
         if(error) return res.status(500).json({error: error.message});
         res.json(data);
     } catch (error) {

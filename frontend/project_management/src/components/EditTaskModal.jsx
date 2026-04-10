@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faPlus, faCalendar, faFlag, faUser, faAlignLeft, faCommentAlt, faPaperPlane, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPlus, faCalendar, faFlag, faUser, faAlignLeft, faCommentAlt, faPaperPlane, faTrash, faCheckDouble } from '@fortawesome/free-solid-svg-icons'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
@@ -18,6 +18,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
     const [comments, setComments] = useState([])
     const [newComment, setNewComment] = useState('')
     const [isPostingComment, setIsPostingComment] = useState(false)
+    const currentUserId = localStorage.getItem("userId")
 
     useEffect(() => {
         if (task) {
@@ -39,7 +40,22 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
                 headers: { Authorization: `Bearer ${token}` }
             })
             setComments(res.data)
+            
+            // Mark unread comments as seen
+            const unseen = res.data.filter(c => !c.read_by?.includes(currentUserId))
+            if (unseen.length > 0) {
+                unseen.forEach(c => markAsSeen(c.id))
+            }
         } catch (error) { console.error('Failed to fetch comments:', error) }
+    }
+
+    const markAsSeen = async (commentId) => {
+        try {
+            const token = localStorage.getItem("token")
+            await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/comments/acknowledge/${commentId}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+        } catch (error) { console.error('Failed to mark as seen:', error) }
     }
 
     const handlePostComment = async (e) => {
@@ -93,7 +109,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
 
     return (
         <div className="fixed inset-0 bg-enterprise-dark/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
-            <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl overflow-hidden border border-white/60 flex h-[85vh] animate-in zoom-in-95 duration-300">
+            <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl overflow-hidden border border-white/60 flex flex-col md:flex-row h-[85vh] animate-in zoom-in-95 duration-300">
                 {/* Left Side: Task Properties */}
                 <div className="flex-1 overflow-y-auto border-r border-enterprise-muted/10">
                     <div className="flex items-center justify-between px-8 py-6 border-b border-enterprise-muted/10 bg-enterprise-light/30">
@@ -164,7 +180,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
                 </div>
 
                 {/* Right Side: Comments System */}
-                <div className="w-[380px] bg-enterprise-light/30 flex flex-col h-full">
+                <div className="w-full md:w-[380px] bg-enterprise-light/30 flex flex-col h-full">
                     <div className="flex items-center justify-between px-6 py-6 border-b border-enterprise-muted/10 bg-white/50">
                         <div className="flex items-center gap-2">
                             <FontAwesomeIcon icon={faCommentAlt} className="text-enterprise-muted text-xs" />
@@ -173,29 +189,49 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
                         <button onClick={onClose} className="text-enterprise-muted hover:text-enterprise-dark hidden md:block"><FontAwesomeIcon icon={faXmark} /></button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                         {comments.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                                 <FontAwesomeIcon icon={faCommentAlt} className="text-3xl mb-4" />
                                 <p className="text-[10px] font-bold uppercase tracking-widest leading-loose">No communications<br/>logged for this entity</p>
                             </div>
                         ) : (
-                            comments.map((comment) => (
-                                <div key={comment.id} className="group animate-in fade-in slide-in-from-bottom-2">
-                                    <div className="flex items-center justify-between mb-1.5 px-1">
-                                        <span className="text-[9px] font-black text-enterprise-dark uppercase tracking-widest">{comment.users?.name}</span>
-                                        <div className="flex items-center gap-3">
+                            comments.map((comment) => {
+                                const isMe = comment.user_id === currentUserId;
+                                const hasOthersSeen = (comment.read_by || []).filter(id => id !== comment.user_id).length > 0;
+                                
+                                return (
+                                    <div key={comment.id} className="group animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="flex items-center justify-between mb-1.5 px-1">
+                                            <span className="text-[9px] font-black text-enterprise-dark uppercase tracking-widest">{comment.users?.name}</span>
                                             <span className="text-[8px] font-bold text-enterprise-muted uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
-                                            {comment.user_id === localStorage.getItem("userId") && (
-                                                <button onClick={() => handleDeleteComment(comment.id)} className="text-[8px] text-red-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-black hover:text-red-600">Delete</button>
-                                            )}
+                                        </div>
+                                        <div className="bg-white border border-enterprise-muted/10 p-4 rounded-xl shadow-sm">
+                                            <p className="text-xs font-medium text-enterprise-dark leading-relaxed mb-2">
+                                                {comment.content}
+                                            </p>
+                                            
+                                            <div className="flex items-center justify-between border-t border-enterprise-light pt-2">
+                                                {isMe ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <FontAwesomeIcon 
+                                                            icon={faCheckDouble} 
+                                                            className={`text-[12px] ${hasOthersSeen ? 'text-blue-600' : 'text-slate-300'}`}
+                                                        />
+                                                        <span className={`text-[12px] font-bold uppercase tracking-widest ${hasOthersSeen ? 'text-blue-600' : 'text-slate-400'}`}>
+                                                            {hasOthersSeen ? "Seen" : "Delivered"}
+                                                        </span>
+                                                    </div>
+                                                ) : <div />}
+                                                
+                                                {isMe && (
+                                                    <button onClick={() => handleDeleteComment(comment.id)} className="text-[8px] text-red-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase font-black hover:text-red-600">Delete</button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="bg-white border border-enterprise-muted/10 p-3 rounded-xl shadow-sm text-xs font-medium text-enterprise-dark leading-relaxed">
-                                        {comment.content}
-                                    </div>
-                                </div>
-                            ))
+                                )
+                            })
                         )}
                     </div>
 
@@ -206,7 +242,7 @@ function EditTaskModal({ task, modules, workspaceMembers, onEditTask, onClose })
                                 onChange={(e) => setNewComment(e.target.value)}
                                 placeholder="Log a transmission..."
                                 rows={2}
-                                className="w-full pl-4 pr-12 py-3 bg-enterprise-light border border-enterprise-muted/20 rounded-xl focus:ring-1 focus:ring-enterprise-dark outline-none text-xs font-medium resize-none placeholder:text-enterprise-muted/40 transition-all"
+                                className="w-full pl-4 pr-12 py-3 bg-enterprise-light border border-enterprise-muted/20 rounded-xl focus:ring-1 focus:ring-enterprise-dark outline-none text-xs font-medium resize-none placeholder:text-enterprise-muted/40 transition-all text-enterprise-dark"
                             />
                             <button
                                 type="submit"

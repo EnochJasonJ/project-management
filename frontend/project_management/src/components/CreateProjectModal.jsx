@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faXmark, faPlus, faAlignLeft } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faPlus, faCalendar, faFlag } from '@fortawesome/free-solid-svg-icons'
 
 function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
+  const [dueDate, setDueDate] = useState("")
+  const [priority, setPriority] = useState("medium")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e) => {
@@ -15,7 +17,9 @@ function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
       await createProject({
         name,
         description,
-        workspace_id: selectedWorkspace.id
+        workspace_id: selectedWorkspace.id,
+        due_date: dueDate || null,
+        priority
       })
       onClose()
     } catch (error) {
@@ -41,7 +45,7 @@ function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="System name..." 
-              className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none transition-all font-semibold text-enterprise-dark"
+              className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark focus:border-enterprise-dark outline-none transition-all font-semibold text-enterprise-dark"
               required
               autoFocus
             />
@@ -54,8 +58,38 @@ function CreateProjectModal({ createProject, selectedWorkspace, onClose }) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="High-level project goals..." 
               rows={3}
-              className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none transition-all font-medium resize-none text-enterprise-dark"
+              className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark focus:border-enterprise-dark outline-none transition-all font-medium resize-none text-enterprise-dark"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5 px-1">
+                <FontAwesomeIcon icon={faFlag} className="mr-1.5 opacity-50" />
+                Weight Class
+              </label>
+              <select 
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none font-semibold text-enterprise-dark cursor-pointer"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-enterprise-muted uppercase tracking-widest mb-1.5 px-1">
+                <FontAwesomeIcon icon={faCalendar} className="mr-1.5 opacity-50" />
+                Target Horizon
+              </label>
+              <input 
+                type="date" 
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-white border border-enterprise-muted/30 rounded focus:ring-1 focus:ring-enterprise-dark outline-none font-semibold text-enterprise-dark"
+              />
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">

@@ -3,13 +3,16 @@ import { supabase } from "../config/db.js";
 // CREATE PROJECT
 export const createProject = async (req, res) => {
     try {
-        const { name, description, workspace_id } = req.body;
+        const { name, description, workspace_id, due_date, priority } = req.body;
         const { data, error } = await supabase
             .from("projects")
             .insert([{
                 name,
                 description,
-                workspace_id
+                workspace_id,
+                due_date: due_date || null,
+                priority: priority || 'medium',
+                status: 'not started'
             }])
             .select("*")
             .single();

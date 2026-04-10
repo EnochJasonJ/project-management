@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faXmark, faPlus, faSignOutAlt, faTrash, faChevronDown, faUserPlus } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faXmark, faPlus, faSignOutAlt, faTrash, faChevronDown, faUserPlus, faThLarge } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
 import Avatar from './Avatar'
 import ListProjects from './ListProjects'
@@ -32,13 +32,12 @@ function Sidebar({
   setTasks,
   workspaceMembers,
 }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [isOpen, setIsOpen] = useState(false) // Mobile open state
   const [showProjectModal, setShowProjectModal] = useState(false)
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false)
   const [showModuleModal, setShowModuleModal] = useState(false);
   const [showTaskModal,setShowTaskModal] = useState(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-  const [showToggle, setShowToggle] = useState(true)
   const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false)
   const navigate = useNavigate()
   const userName = localStorage.getItem("userName")
@@ -47,15 +46,7 @@ function Sidebar({
 
   const isOwner = selectedWorkspace?.owner_id === currentUserId
 
-  const collapse = () => {
-    if (!collapsed) {
-      setCollapsed(true)
-      setTimeout(() => setShowToggle(true), 450)
-    } else {
-      setShowToggle(false)
-      setCollapsed(false)
-    }
-  }
+  const toggleSidebar = () => setIsOpen(!isOpen)
 
   const logout = () => {
     localStorage.removeItem("token")
@@ -69,7 +60,26 @@ function Sidebar({
   }, [])
 
   return (
-    <div className="relative">
+    <>
+      {/* Mobile Hamburger Toggle */}
+      {!isOpen && (
+        <button
+          onClick={toggleSidebar}
+          className="fixed top-4 left-4 z-50 lg:hidden bg-enterprise-dark text-white shadow-md rounded-md flex items-center justify-center h-10 w-10 hover:bg-enterprise-accent transition-all"
+        >
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+      )}
+
+      {/* Backdrop for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Modals */}
       {showProjectModal && (
         <CreateProjectModal
           createProject={createProject}
@@ -83,21 +93,18 @@ function Sidebar({
           onClose={() => setShowWorkspaceModal(false)}
         />
       )}
-
       {showModuleModal && (
         <CreateModuleModal
-        createModule={createModule}
-        selectedProject={selectedProject}
-        selectedWorkspace={selectedWorkspace}
-        onClose={() => setShowModuleModal(false)}
+          createModule={createModule}
+          selectedProject={selectedProject}
+          onClose={() => setShowModuleModal(false)}
         />
       )}
-
       {showTaskModal && (
         <CreateTaskModal
           modules={modules}
           workspaceMembers={workspaceMembers}
-          workspaceId={selectedWorkspace.id}
+          workspaceId={selectedWorkspace?.id}
           onCreateTask={(taskData) => {
             createTask(taskData)
             setShowTaskModal(false)
@@ -105,35 +112,25 @@ function Sidebar({
           onClose={() => setShowTaskModal(false)}
         />
       )}
-
       {showAddMemberModal && (
         <AddMemberModal
           workspace={selectedWorkspace}
           onClose={() => setShowAddMemberModal(false)}
           onMemberAdded={() => {
-            // Force refresh of members list by notifying parent
             const event = new CustomEvent('workspace-members-updated')
             window.dispatchEvent(event)
           }}
         />
       )}
 
-      {collapsed && showToggle && (
-        <button
-          onClick={collapse}
-          className="fixed top-4 left-4 z-50 bg-enterprise-dark text-white shadow-md rounded-md flex items-center justify-center h-10 w-10 hover:bg-enterprise-accent transition-all"
-        >
-          <FontAwesomeIcon icon={faBars} />
-        </button>
-      )}
-
+      {/* Sidebar Content */}
       <div
         id="sidebar-container"
-        className={`bg-enterprise-dark h-[100vh] fixed top-0 left-0 border-r border-white/10 shadow-xl transform z-40 transition-all duration-300 ${collapsed ? '-translate-x-full' : 'translate-x-0'} w-72`}
+        className={`bg-enterprise-dark h-full fixed top-0 left-0 border-r border-white/10 shadow-2xl z-50 transition-all duration-300 w-72 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col h-full">
           {/* User Header */}
-          <div className="p-6 border-b border-white/5">
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar name={userName} />
               <div className="overflow-hidden">
@@ -141,6 +138,9 @@ function Sidebar({
                 <p className="text-xs text-enterprise-muted truncate uppercase tracking-widest mt-0.5">{emailId}</p>
               </div>
             </div>
+            <button onClick={toggleSidebar} className="lg:hidden text-white/40 hover:text-white">
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
           </div>
 
           {/* Workspace Switcher */}
@@ -169,7 +169,7 @@ function Sidebar({
               </button>
 
               {showWorkspaceDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#2d3748] rounded-lg shadow-2xl border border-white/10 overflow-hidden z-50">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#2d3748] rounded-lg shadow-2xl border border-white/10 overflow-hidden z-[60]">
                   {workspaces.map(ws => (
                     <button
                       key={ws.id}
@@ -195,7 +195,7 @@ function Sidebar({
             
             <button
               onClick={() => setShowProjectModal(true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
             >
               <FontAwesomeIcon icon={faPlus} className="text-enterprise-muted w-4" />
               <span>Initiate Project</span>
@@ -203,16 +203,25 @@ function Sidebar({
 
             <button
               onClick={() => setShowWorkspaceModal(true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
             >
               <FontAwesomeIcon icon={faPlus} className="text-enterprise-muted w-4" />
               <span>Create Workspace</span>
             </button>
 
+            {/* FIXED: Added Create Module button */}
+            <button
+              onClick={() => setShowModuleModal(true)}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-enterprise-muted hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
+            >
+              <FontAwesomeIcon icon={faThLarge} className="text-enterprise-muted w-4" />
+              <span>Initialize Module</span>
+            </button>
+
             <div className="pt-6 px-3 mb-2">
               <p className="text-xs font-bold text-enterprise-muted uppercase tracking-[0.15em]">Registry</p>
             </div>
-            <div className="px-1 max-h-[45vh] overflow-y-auto custom-scrollbar">
+            <div className="px-1 max-h-[40vh] overflow-y-auto custom-scrollbar">
               <ListProjects
                 projects={projects}
                 selectedProject={selectedProject}
@@ -249,7 +258,7 @@ function Sidebar({
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

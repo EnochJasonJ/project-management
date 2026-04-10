@@ -139,7 +139,7 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     const getModuleName = (moduleId) => modules.find(m => m.id === moduleId)?.name || 'No Module'
 
     const handleEditTask = async (taskId, taskData) => {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem("token")
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/tasks/${taskId}`, {
                 method: 'PATCH',
@@ -215,45 +215,71 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
     )
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-enterprise-muted/20 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-enterprise-muted/10 bg-white">
-                <div className="flex items-center gap-4">
-                    <div className="relative">
+        <div className="bg-white rounded-xl shadow-sm border border-enterprise-muted/20 overflow-hidden w-full">
+            {/* Responsive Toolbar */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between px-4 py-4 lg:px-6 lg:py-5 border-b border-enterprise-muted/10 bg-white gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="relative group flex-1 sm:flex-none">
                         <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 -translate-y-1/2 text-enterprise-muted text-xs" />
-                        <input type="text" placeholder="Search operational tasks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 pr-4 py-2 text-sm bg-white border border-enterprise-muted/30 rounded-md focus:outline-none focus:ring-1 focus:ring-enterprise-dark w-80 placeholder:text-enterprise-muted/50 font-medium text-enterprise-dark" />
+                        <input 
+                            type="text" 
+                            placeholder="Search tasks..." 
+                            value={searchQuery} 
+                            onChange={(e) => setSearchQuery(e.target.value)} 
+                            className="pl-9 pr-4 py-2 text-sm bg-white border border-enterprise-muted/30 rounded-md focus:outline-none focus:ring-1 focus:ring-enterprise-dark w-full sm:w-64 placeholder:text-enterprise-muted/50 font-medium text-enterprise-dark" 
+                        />
                     </div>
-                    <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest rounded border transition-all ${filterConfig.status.length > 0 || filterConfig.priority.length > 0 ? 'bg-enterprise-dark text-white border-enterprise-dark shadow-sm' : 'bg-white border border-enterprise-muted/30 text-enterprise-muted hover:border-enterprise-dark'}`}><FontAwesomeIcon icon={faFilter} /> Filter Pipeline</button>
+                    <button 
+                        onClick={() => setShowFilters(!showFilters)} 
+                        className={`flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest rounded border transition-all ${filterConfig.status.length > 0 || filterConfig.priority.length > 0 ? 'bg-enterprise-dark text-white border-enterprise-dark' : 'bg-white border-enterprise-muted/30 text-enterprise-muted hover:border-enterprise-dark'}`}
+                    >
+                        <FontAwesomeIcon icon={faFilter} /> 
+                        Filter
+                    </button>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center bg-enterprise-light p-1 rounded-lg border border-enterprise-muted/20">
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="flex items-center justify-center bg-enterprise-light p-1 rounded-lg border border-enterprise-muted/20 order-2 sm:order-1">
                         {[
                             { id: 'table', icon: faTable, label: 'Sheet' },
                             { id: 'board', icon: faThLarge, label: 'Kanban' },
                             { id: 'list', icon: faList, label: 'Stream' }
                         ].map(m => (
-                            <button key={m.id} onClick={() => setViewMode(m.id)} className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-2 ${viewMode === m.id ? 'bg-white text-enterprise-dark shadow-sm' : 'text-enterprise-muted hover:text-enterprise-dark'}`}>
+                            <button 
+                                key={m.id} 
+                                onClick={() => setViewMode(m.id)} 
+                                className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-2 ${viewMode === m.id ? 'bg-white text-enterprise-dark shadow-sm' : 'text-enterprise-muted hover:text-enterprise-dark'}`}
+                            >
                                 <FontAwesomeIcon icon={m.icon} size="xs" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">{m.label}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest hidden xs:inline">{m.label}</span>
                             </button>
                         ))}
                     </div>
-                    <button onClick={onCreateTask} className="flex items-center gap-2 px-5 py-2 bg-enterprise-dark text-white text-xs font-bold uppercase tracking-widest rounded-md hover:bg-enterprise-accent transition-all shadow-md"><FontAwesomeIcon icon={faPlus} /> New Operation</button>
+                    <button 
+                        onClick={onCreateTask} 
+                        className="flex items-center justify-center gap-2 px-5 py-2 bg-enterprise-dark text-white text-xs font-bold uppercase tracking-widest rounded-md hover:bg-enterprise-accent transition-all shadow-md order-1 sm:order-2"
+                    >
+                        <FontAwesomeIcon icon={faPlus} /> 
+                        New Operation
+                    </button>
                 </div>
             </div>
 
+            {/* Selection Bar */}
             {selectedTasks.size > 0 && (
-                <div className="flex items-center justify-between px-8 py-3 bg-enterprise-dark text-white border-b border-enterprise-muted/20 animate-in slide-in-from-top-2 duration-200">
-                    <span className="text-xs font-bold uppercase tracking-[0.2em]">{selectedTasks.size} Selected Units</span>
-                    <div className="flex items-center gap-10">
+                <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-3 bg-enterprise-dark text-white border-b border-enterprise-muted/20 gap-3">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em]">{selectedTasks.size} Selected</span>
+                    <div className="flex items-center gap-6">
                         <button className="text-[10px] font-black uppercase tracking-[0.2em] hover:text-blue-400 transition-colors" onClick={handleBulkMarkAsDone}>Batch Complete</button>
-                        <button className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 hover:text-red-300 transition-colors" onClick={handleBulkDeleteTasks}>Purge Selection</button>
+                        <button className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 hover:text-red-300 transition-colors" onClick={handleBulkDeleteTasks}>Purge Tasks</button>
                     </div>
                 </div>
             )}
 
+            {/* Table View - Scrollable */}
             {viewMode === 'table' && (
-                <div className="overflow-x-auto">
-                    <table className="w-full">
+                <div className="overflow-x-auto w-full">
+                    <table className="min-w-[1000px] w-full">
                         <thead className="bg-enterprise-light border-b border-enterprise-muted/20">
                             <tr>
                                 <th className="w-14 px-4 py-4 text-center"><input type="checkbox" checked={filteredTasks.length > 0 && selectedTasks.size === filteredTasks.length} onChange={(e) => e.target.checked ? setSelectedTasks(new Set(filteredTasks.map(t => t.id))) : setSelectedTasks(new Set())} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-4 h-4" /></th>
@@ -339,12 +365,13 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                 </div>
             )}
 
+            {/* Board View - Responsive Grid */}
             {viewMode === 'board' && (
-                <div className="flex gap-8 p-10 overflow-x-auto bg-enterprise-light/20 min-h-[600px]">
+                <div className="flex gap-6 p-6 lg:p-10 overflow-x-auto bg-enterprise-light/20 min-h-[600px]">
                     {Object.entries(STATUS_CONFIG).map(([status, config]) => {
                         const statusTasks = filteredTasks.filter(t => t.status === status)
                         return (
-                            <div key={status} className="flex-shrink-0 w-80">
+                            <div key={status} className="flex-shrink-0 w-[280px] sm:w-80">
                                 <div className={`flex items-center justify-between mb-6 px-4 py-3 rounded-lg border-b-2 border-enterprise-muted/30 shadow-sm ${config.color}`}><div className="flex items-center gap-3 font-bold uppercase tracking-[0.2em] text-xs"><FontAwesomeIcon icon={config.icon} /><span>{config.label}</span></div><span className="text-xs font-black text-enterprise-dark">{statusTasks.length}</span></div>
                                 <div className="space-y-4">
                                     {statusTasks.map(task => (
@@ -361,14 +388,22 @@ function TaskTable({ tasks, setTasks, modules, selectedProject, selectedWorkspac
                 </div>
             )}
 
+            {/* List View - Responsive Padding */}
             {viewMode === 'list' && (
                 <div className="divide-y divide-enterprise-muted/10">
                     {filteredTasks.map(task => (
-                        <div key={task.id} onClick={() => setTaskToEdit(task)} className="flex items-center gap-6 px-10 py-5 hover:bg-enterprise-light/20 transition-all group relative cursor-pointer">
-                            <input type="checkbox" checked={selectedTasks.has(task.id)} onChange={(e) => { e.stopPropagation(); toggleTaskSelection(task.id); }} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-5 h-5" />
-                            <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-base ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/20'}`} />
-                            <span className={`flex-1 font-bold text-base tracking-tight ${task.status === 'done' ? 'line-through text-enterprise-muted/30' : 'text-enterprise-dark'}`}>{task.title}</span>
-                            <div className="flex items-center gap-10">{task.users && <div className="w-9 h-9 rounded bg-enterprise-dark flex items-center justify-center text-sm text-white font-bold shadow-md">{task.users.name.charAt(0)}</div>}<span className={`text-[10px] font-black px-4 py-2 rounded-md border uppercase tracking-[0.2em] shadow-sm ${STATUS_CONFIG[task.status]?.color}`}>{STATUS_CONFIG[task.status]?.label}</span><button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark p-2 rounded-full hover:bg-enterprise-light transition-all opacity-0 group-hover:opacity-100"><FontAwesomeIcon icon={faEllipsisV} /></button>{showActionsMenu === task.id && renderActionsMenu(task)}</div>
+                        <div key={task.id} onClick={() => setTaskToEdit(task)} className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 px-6 py-5 lg:px-10 lg:py-6 hover:bg-enterprise-light/20 transition-all group relative cursor-pointer">
+                            <div className="flex items-center gap-4 flex-1">
+                                <input type="checkbox" checked={selectedTasks.has(task.id)} onChange={(e) => { e.stopPropagation(); toggleTaskSelection(task.id); }} className="rounded border-enterprise-muted/50 text-enterprise-dark focus:ring-enterprise-dark w-5 h-5" />
+                                <FontAwesomeIcon icon={task.status === 'done' ? faCheckCircle : faCircle} className={`text-base ${task.status === 'done' ? 'text-green-500' : 'text-enterprise-muted/20'}`} />
+                                <span className={`flex-1 font-bold text-base tracking-tight ${task.status === 'done' ? 'line-through text-enterprise-muted/30' : 'text-enterprise-dark'}`}>{task.title}</span>
+                            </div>
+                            <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-10 pl-9 sm:pl-0">
+                                {task.users && <div className="w-8 h-8 rounded bg-enterprise-dark flex items-center justify-center text-xs text-white font-bold shadow-md">{task.users.name.charAt(0)}</div>}
+                                <span className={`text-[10px] font-black px-4 py-2 rounded-md border uppercase tracking-[0.2em] shadow-sm ${STATUS_CONFIG[task.status]?.color}`}>{STATUS_CONFIG[task.status]?.label}</span>
+                                <button onClick={(e) => { e.stopPropagation(); setShowActionsMenu(showActionsMenu === task.id ? null : task.id); }} className="text-enterprise-muted/30 hover:text-enterprise-dark p-2 rounded-full hover:bg-enterprise-light transition-all opacity-0 group-hover:opacity-100"><FontAwesomeIcon icon={faEllipsisV} /></button>
+                                {showActionsMenu === task.id && renderActionsMenu(task)}
+                            </div>
                         </div>
                     ))}
                 </div>

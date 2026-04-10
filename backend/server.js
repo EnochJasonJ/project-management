@@ -13,6 +13,18 @@ dotenv.config();
 const app = express();
 app.use(cors())
 app.use(express.json());
+
+// Handle trailing slashes for GET requests
+app.use((req, res, next) => {
+    if (req.method === 'GET' && req.path.length > 1 && req.path.endsWith('/')) {
+        const query = req.url.slice(req.path.length);
+        const safepath = req.path.slice(0, -1);
+        res.redirect(301, safepath + query);
+    } else {
+        next();
+    }
+});
+
 app.use("/api/auth",authRoutes);
 app.use("/api/workspaces",workspaceRoutes);
 app.use("/api/projects", projectRoutes);
